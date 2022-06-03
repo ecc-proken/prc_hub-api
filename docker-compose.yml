@@ -1,0 +1,57 @@
+version: "3.7"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/go/src/app
+      - go_src:/src/
+    ports:
+      - ${PORT:-1323}:${PORT:-1323}
+    environment:
+      TZ: ${TZ:-UTC}
+      PORT: ${PORT:-1323}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-prc_hub}
+      MYSQL_USER: ${MYSQL_USER:-prc_hub}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      LOG_LEVEL: ${LOG_LEVEL:-2}
+      GZIP_LEVEL: ${GZIP_LEVEL:-6}
+      MYSQL_HOST: ${MYSQL_HOST:-db}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      JWT_ISSUER: ${JWT_ISSUER:-prc_hub}
+      JWT_SECRET: ${JWT_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@prchub.com}
+      ADMIN_PASSWD: ${ADMIN_PASSWD:-password}
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mysql:8
+    volumes:
+      - type: bind
+        source: "./db/init.sql"
+        target: "/docker-entrypoint-initdb.d/init.sql"
+      - type: bind
+        source: "./db/my.cnf"
+        target: "/etc/mysql/conf.d/my.cnf"
+      - ./db/log:/var/log/mysql
+      - mysql_data:/var/lib/mysql
+    ports:
+      - 3306
+    environment:
+      TZ: ${TZ:-UTC}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-prc_hub}
+      MYSQL_USER: ${MYSQL_USER:-prc_hub}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    restart: unless-stopped
+
+volumes:
+  go_src:
+  mysql_data:

@@ -1,0 +1,653 @@
+openapi: 3.0.0
+servers: []
+info:
+  description: ""
+  version: "1.0.0"
+  title: プロ研Hub Web API
+  license:
+    name: Apache 2.0
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+tags: []
+
+security:
+  - Bearer: []
+
+paths:
+  /users:
+    get:
+      summary: ユーザー一覧
+      description: Admin only
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: ユーザー登録
+      security: []
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUserBody"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserWithToken"
+        400:
+          description: Invalid request
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+    delete:
+      summary: ユーザー削除
+      description: "`user.name: admin`は削除不可"
+      responses:
+        204:
+          description: Deleted
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /users/sign_in:
+    post:
+      summary: サインイン
+      security: []
+      requestBody:
+        $ref: "#/components/requestBodies/LoginBody"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        401:
+          description: Unauthorized
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+
+  /users/{id}:
+    get:
+      summary: ユーザー詳細
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+    patch:
+      summary: ユーザー情報変更
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUserBody"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserWithToken"
+        400:
+          description: Invalid request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+    delete:
+      summary: ユーザー削除
+      description: "`user.name: admin`は削除不可"
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        204:
+          description: Deleted
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /users/oauth2/{oauth_providers}/register:
+    post:
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/oauth_providers"
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUserOverOauth2Body"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserWithToken"
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /users/oauth2/{oauth_providers}/connect:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/oauth_providers"
+      requestBody:
+        $ref: "#/components/requestBodies/OAuth2ConnectBody"
+      responses:
+        200:
+          description: Success
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /users/oauth2/{oauth_providers}:
+    delete:
+      parameters:
+        - $ref: "#/components/parameters/oauth_providers"
+      responses:
+        204:
+          description: Deleted
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /events:
+    get:
+      summary: イベント一覧
+      security: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      summary: イベント登録
+      requestBody:
+        $ref: "#/components/requestBodies/CreateEventBody"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        400:
+          description: Invalid request
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+
+  /events/{id}:
+    get:
+      summary: イベント詳細
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+    patch:
+      summary: イベント情報変更
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateEventBody"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        400:
+          description: Invalid request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+    delete:
+      summary: イベント削除
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        204:
+          description: Deleted
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /events/{id}/line_notify_hook:
+    post:
+      summary: アンケートURL・資料URLの送信
+      description: |
+        アンケートURL・資料URLの送信。  
+        何を送るかはリクエストに情報を含める
+      parameters:
+        - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/scope"
+      responses:
+        200:
+          description: Success
+        400:
+          description: Invalid request
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+          minimum: 1
+          example: 1
+        name:
+          type: string
+          example: prc_hub_user
+        email:
+          type: string
+          format: email
+          example: user@prc_hub.com
+        github_username:
+          type: string
+          example: ecc-proken
+        twitter_id:
+          type: string
+          example: ecc_prc
+        post_event_availabled:
+          type: boolean
+          example: true
+        admin:
+          type: boolean
+          example: false
+      required:
+        - id
+        - name
+        - email
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@prc_hub.com
+        password:
+          type: string
+          format: password
+          example: prc_hub
+      required:
+        - email
+        - password
+
+    UserWithToken:
+      type: object
+      properties:
+        id:
+          type: number
+          minimum: 1
+          example: 1
+        name:
+          type: string
+          example: prc_hub_user
+        email:
+          type: string
+          format: email
+          example: user@prc_hub.com
+        github_username:
+          type: string
+          example: ecc-proken
+        twitter_id:
+          type: string
+          example: ecc_prc
+        post_event_availabled:
+          type: boolean
+          example: true
+        admin:
+          type: boolean
+          example: false
+        token:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - token
+
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    CreateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+          example: prc_hub_user
+        email:
+          type: string
+          format: email
+          example: user@prc_hub.com
+        password:
+          type: string
+          format: password
+          example: prc_hub
+        github_username:
+          type: string
+          example: ecc-proken
+        twitter_id:
+          type: string
+          example: ecc_prc
+      required:
+        - name
+        - email
+        - password
+
+    CreateUserOverOauth2Body:
+      type: object
+      properties:
+        access_token:
+          type: string
+        expire_in:
+          type: integer
+        refresh_token:
+          type: string
+        refresh_token_expire_in:
+          type: integer
+        password:
+          type: string
+      required:
+        - access_token
+        - expire_in
+        - refresh_token
+        - password
+
+    OAuth2ConnectBody:
+      type: object
+      properties:
+        access_token:
+          type: string
+        expire_in:
+          type: integer
+        refresh_token:
+          type: string
+        refresh_token_expire_in:
+          type: integer
+      required:
+        - access_token
+        - expire_in
+        - refresh_token
+
+    UpdateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        post_event_availabled:
+          type: boolean
+          example: true
+        admin:
+          type: boolean
+          example: false
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: number
+          minimum: 1
+          example: 1
+        title:
+          type: string
+          example: ITシステムの構造
+        location:
+          type: string
+          example: 2303
+        published:
+          type: boolean
+          example: true
+        completed:
+          type: boolean
+          example: false
+        auto_notify_documents:
+          type: boolean
+          example: true
+          description: |
+            `true`の場合`event`情報更新後`completed: true`かつ`documents`がある場合にLINE notifyにリクエスト
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                minimum: 1
+                example: 1
+              name:
+                type: string
+                example: スライド
+              url:
+                type: string
+                format: uri
+                example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+      required:
+        - id
+        - title
+        - published
+        - completed
+        - auto_notify_documents
+
+    CreateEventBody:
+      type: object
+      properties:
+        title:
+          type: string
+          example: ITシステムの構造
+        location:
+          type: string
+          example: 2303
+        published:
+          type: boolean
+          default: true
+          example: true
+        completed:
+          type: boolean
+          default: false
+          example: false
+        auto_notify_documents:
+          type: boolean
+          default: false
+          example: true
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                minimum: 1
+                example: 1
+              name:
+                type: string
+                example: スライド
+              url:
+                type: string
+                format: uri
+                example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+      required:
+        - title
+
+    UpdateEventBody:
+      type: object
+      properties:
+        title:
+          type: string
+          example: ITシステムの構造
+        location:
+          type: string
+          example: 2303
+        published:
+          type: boolean
+          example: true
+        completed:
+          type: boolean
+          example: true
+        auto_notify_documents:
+          type: boolean
+          example: true
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                minimum: 1
+                example: 1
+              name:
+                type: string
+                example: スライド
+              url:
+                type: string
+                format: uri
+                example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+
+  requestBodies:
+    LoginBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LoginBody"
+    CreateUserBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateUserBody"
+    OAuth2ConnectBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OAuth2ConnectBody"
+    CreateUserOverOauth2Body:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateUserOverOauth2Body"
+    UpdateUserBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateUserBody"
+    CreateEventBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateEventBody"
+    UpdateEventBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateEventBody"
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    scope:
+      name: scope
+      in: query
+      required: true
+      schema:
+        type: string
+        enum:
+          - info
+          - documents
+    oauth_providers:
+      name: oauth_providers
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - github
+
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      description: Credentials or access token for API

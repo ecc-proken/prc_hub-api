@@ -15,6 +15,8 @@
 | `GZIP_LEVEL`            | API Gzip level              | 6         |                    |
 | `MYSQL_HOST`            | MySQL host                  | db        |                    |
 | `MYSQL_PORT`            | MySQL port                  | 3306      |                    |
+| `JWT_ISSUER`            | JWT issuer                  | prc_hub   |                    |
+| `JWT_SECRET`            | JWT secret                  |           | :heavy_check_mark: |
 | `ADMIN_EMAIL`           | Admin user email            |           |                    |
 | `ADMIN_PASSWD`          | Admin user password         |           |                    |
 

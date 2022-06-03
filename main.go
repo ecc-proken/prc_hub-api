@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"prc_hub-api/flags"
+	handler_users "prc_hub-api/handler/users"
+	"prc_hub-api/jwt"
 	"prc_hub-api/migration"
 	"prc_hub-api/mysql"
 
@@ -56,6 +58,20 @@ func main() {
 		// Adminユーザーの追加成功
 		e.Logger.Info("Migrate admin user successful.")
 	}
+
+	// JWTの設定
+	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims:     &jwt.JwtCustumClaims{},
+		SigningKey: []byte(*f.JwtSecret),
+		Skipper: func(c echo.Context) bool {
+			// 公開エンドポイントのJWT認証をスキップ
+			return c.Path() == "/users" && c.Request().Method == "POST" ||
+				c.Path() == "/users/sign_in" && c.Request().Method == "POST"
+		},
+	}))
+
+	// 公開エンドポイント
+	e.POST("/users", handler_users.Post)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

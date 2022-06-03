@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"prc_hub-api/flags"
+	handler_oauth2 "prc_hub-api/handler/oauth_provider"
 	handler_users "prc_hub-api/handler/users"
 	"prc_hub-api/jwt"
 	"prc_hub-api/migration"
 	"prc_hub-api/mysql"
+	"prc_hub-api/oauth2/github"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -59,6 +61,11 @@ func main() {
 		e.Logger.Info("Migrate admin user successful.")
 	}
 
+	_, err = github.New(*f.GithubClientId, *f.GithubClientSecret)
+	if err != nil {
+		e.Logger.Error(err.Error())
+	}
+
 	// JWTの設定
 	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		Claims:     &jwt.JwtCustumClaims{},
@@ -81,6 +88,7 @@ func main() {
 	e.GET("/users/:id", handler_users.GetById)
 	e.PATCH("/users/:id", handler_users.PatchById)
 	e.DELETE("/users/:id", handler_users.DeleteById)
+	e.POST("/users/oauth2/:provider", handler_oauth2.Post)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

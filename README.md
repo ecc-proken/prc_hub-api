@@ -17,6 +17,8 @@
 | `MYSQL_PORT`            | MySQL port                  | 3306      |                    |
 | `JWT_ISSUER`            | JWT issuer                  | prc_hub   |                    |
 | `JWT_SECRET`            | JWT secret                  |           | :heavy_check_mark: |
+| `GITHUB_CLIENT_ID`      | GitHub OAuth client id      |           |                    |
+| `GITHUB_CLIENT_SECRET`  | GitHub OAuth client secret  |           |                    |
 | `ADMIN_EMAIL`           | Admin user email            |           |                    |
 | `ADMIN_PASSWD`          | Admin user password         |           |                    |
 

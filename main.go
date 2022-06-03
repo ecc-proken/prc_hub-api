@@ -25,28 +25,35 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
+	// コマンドライン引数 / 環境変数 の取得
 	f := flags.Get()
 
+	// echoサーバーのインスタンス生成
 	e := echo.New()
+	// Gzipの圧縮レベル設定
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: int(*f.GzipLevel),
 	}))
+	// ログレベルの設定
 	e.Logger.SetLevel(log.Lvl(*f.LogLevel))
+	// structの変数を検証するvalidatorをechoに設定
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	// Setup db client instance
+	// mysqlに接続するクライアントの設定
 	e.Logger.Info(mysql.SetDSNTCP(*f.MysqlUser, *f.MysqlPasswd, *f.MysqlHost, int(*f.MysqlPORT), *f.MysqlDB))
 
-	// Migrate
+	// Adminユーザーのマイグレーション
 	adminFound, invalidEmail, usedEmail, err := migration.MigrateAdminUser(*f.AdminEmail, *f.AdminPasswd)
 	if err != nil {
 		e.Logger.Fatal(err.Error())
 		return
 	}
 	if !adminFound && invalidEmail && usedEmail {
+		// Adminユーザーのemailが使用済みまたは不正
 		e.Logger.Fatalf("Admin email already used or invalid. %s", *f.AdminEmail)
 	}
 	if !adminFound && !invalidEmail && !usedEmail {
+		// Adminユーザーの追加成功
 		e.Logger.Info("Migrate admin user successful.")
 	}
 

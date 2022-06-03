@@ -15,7 +15,7 @@ type Owner struct {
 }
 
 // GitHubの登録情報を取得
-func (g *Application) GetOwner(token string) (o Owner, err error) {
+func (g *Client) GetOwner(token string) (o Owner, err error) {
 	// githubAPI用リクエストの作成
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	if err != nil {
@@ -61,7 +61,7 @@ type OwnerEmail struct {
 }
 
 // GitHubに登録されているemail一覧を取得
-func (g *Application) getOwnerEmails(token string) (emails []OwnerEmail, err error) {
+func (g *Client) getOwnerEmails(token string) (emails []OwnerEmail, err error) {
 	// githubAPI用リクエストの作成
 	req, err := http.NewRequest("GET", "https://api.github.com/user/emails", nil)
 	if err != nil {
@@ -99,7 +99,7 @@ func (g *Application) getOwnerEmails(token string) (emails []OwnerEmail, err err
 }
 
 // GitHubに登録されているemailからprimaryに設定されているものを取得
-func (g *Application) GetOwnerPrimaryEmail(token string) (e OwnerEmail, err error) {
+func (g *Client) GetOwnerPrimaryEmail(token string) (e OwnerEmail, err error) {
 	// GitHubに登録されているemail一覧を取得
 	emails, err := g.getOwnerEmails(token)
 	if err != nil {

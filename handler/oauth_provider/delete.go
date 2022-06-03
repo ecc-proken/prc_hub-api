@@ -26,7 +26,7 @@ func Delete(c echo.Context) (err error) {
 	provider := c.Param("provider")
 	switch provider {
 	case oauth2.ProviderGitHub.String():
-		if *flags.Get().GithubClientId == "" || *flags.Get().GithubClientSecret == "" {
+		if _, err = github.GetClient(); err != nil {
 			// 404: Not found
 			return echo.ErrNotFound
 		}

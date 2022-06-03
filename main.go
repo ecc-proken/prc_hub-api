@@ -61,9 +61,13 @@ func main() {
 		e.Logger.Info("Migrate admin user successful.")
 	}
 
-	_, err = github.New(*f.GithubClientId, *f.GithubClientSecret)
-	if err != nil {
-		e.Logger.Error(err.Error())
+	if *f.GithubClientId != "" && *f.GithubClientSecret != "" {
+		err = github.SetClient(*f.GithubClientId, *f.GithubClientSecret)
+		if err != nil {
+			e.Logger.Error(err.Error())
+		}
+	} else {
+		e.Logger.Info("ClientId and ClientSecret not found, GitHub OAuth2 disabled")
 	}
 
 	// JWTの設定

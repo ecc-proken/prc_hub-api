@@ -42,7 +42,7 @@ func Post(c echo.Context) (err error) {
 	provider := c.Param("provider")
 	switch provider {
 	case oauth2.ProviderGitHub.String():
-		if *flags.Get().GithubClientId == "" || *flags.Get().GithubClientSecret == "" {
+		if _, err = github.GetClient(); err != nil {
 			// 404: Not found
 			return echo.ErrNotFound
 		}
@@ -71,8 +71,8 @@ func Post(c echo.Context) (err error) {
 		}
 
 		// GitHubの登録情報を取得
-		var a *github.Application
-		a, err = github.New(*flags.Get().GithubClientId, *flags.Get().GithubClientSecret)
+		var a *github.Client
+		a, err = github.GetClient()
 		if err != nil {
 			c.Logger().Debug(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")

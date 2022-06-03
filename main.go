@@ -73,12 +73,14 @@ func main() {
 		Skipper: func(c echo.Context) bool {
 			// 公開エンドポイントのJWT認証をスキップ
 			return c.Path() == "/users" && c.Request().Method == "POST" ||
+				c.Path() == "/users/:provider/register" && c.Request().Method == "POST" ||
 				c.Path() == "/users/sign_in" && c.Request().Method == "POST"
 		},
 	}))
 
 	// 公開エンドポイント
 	e.POST("/users", handler_users.Post)
+	e.POST("/users/oauth2/:provider/register", handler_oauth2.Register)
 	e.POST("/users/sign_in", handler_users.SignIn)
 
 	// Restricted routes

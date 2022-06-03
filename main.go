@@ -72,6 +72,7 @@ func main() {
 
 	// 公開エンドポイント
 	e.POST("/users", handler_users.Post)
+	e.POST("/users/sign_in", handler_users.SignIn)
 
 	// Restricted routes
 	e.GET("/users", handler_users.Get)

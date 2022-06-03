@@ -91,6 +91,7 @@ func main() {
 	e.PATCH("/users/:id", handler_users.PatchById)
 	e.DELETE("/users/:id", handler_users.DeleteById)
 	e.POST("/users/oauth2/:provider", handler_oauth2.Post)
+	e.DELETE("/users/oauth2/:provider", handler_oauth2.Delete)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

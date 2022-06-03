@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"prc_hub-api/flags"
+	"prc_hub-api/migration"
 	"prc_hub-api/mysql"
 
 	"github.com/go-playground/validator"
@@ -35,6 +36,19 @@ func main() {
 
 	// Setup db client instance
 	e.Logger.Info(mysql.SetDSNTCP(*f.MysqlUser, *f.MysqlPasswd, *f.MysqlHost, int(*f.MysqlPORT), *f.MysqlDB))
+
+	// Migrate
+	adminFound, invalidEmail, usedEmail, err := migration.MigrateAdminUser(*f.AdminEmail, *f.AdminPasswd)
+	if err != nil {
+		e.Logger.Fatal(err.Error())
+		return
+	}
+	if !adminFound && invalidEmail && usedEmail {
+		e.Logger.Fatalf("Admin email already used or invalid. %s", *f.AdminEmail)
+	}
+	if !adminFound && !invalidEmail && !usedEmail {
+		e.Logger.Info("Migrate admin user successful.")
+	}
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

@@ -15,6 +15,8 @@
 | `GZIP_LEVEL`            | API Gzip level              | 6         |                    |
 | `MYSQL_HOST`            | MySQL host                  | db        |                    |
 | `MYSQL_PORT`            | MySQL port                  | 3306      |                    |
+| `ADMIN_EMAIL`           | Admin user email            |           |                    |
+| `ADMIN_PASSWD`          | Admin user password         |           |                    |
 
 ### Use docker
 

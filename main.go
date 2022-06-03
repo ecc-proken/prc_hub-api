@@ -75,8 +75,10 @@ func main() {
 
 	// Restricted routes
 	e.GET("/users", handler_users.Get)
+	e.PATCH("/users", handler_users.PatchOwn)
 	e.DELETE("/users", handler_users.DeleteOwn)
 	e.GET("/users/:id", handler_users.GetById)
+	e.PATCH("/users/:id", handler_users.PatchById)
 	e.DELETE("/users/:id", handler_users.DeleteById)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))

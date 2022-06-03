@@ -73,5 +73,9 @@ func main() {
 	// 公開エンドポイント
 	e.POST("/users", handler_users.Post)
 
+	// Restricted routes
+	e.GET("/users", handler_users.Get)
+	e.GET("/users/:id", handler_users.GetById)
+
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

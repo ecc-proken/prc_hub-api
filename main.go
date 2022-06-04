@@ -3,8 +3,12 @@ package main
 import (
 	"fmt"
 	"prc_hub-api/flags"
+	handler_oauth2 "prc_hub-api/handler/oauth_provider"
+	handler_users "prc_hub-api/handler/users"
+	"prc_hub-api/jwt"
 	"prc_hub-api/migration"
 	"prc_hub-api/mysql"
+	"prc_hub-api/oauth2/github"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -56,6 +60,42 @@ func main() {
 		// Adminユーザーの追加成功
 		e.Logger.Info("Migrate admin user successful.")
 	}
+
+	if *f.GithubClientId != "" && *f.GithubClientSecret != "" {
+		err = github.SetClient(*f.GithubClientId, *f.GithubClientSecret)
+		if err != nil {
+			e.Logger.Error(err.Error())
+		}
+	} else {
+		e.Logger.Info("ClientId and ClientSecret not found, GitHub OAuth2 disabled")
+	}
+
+	// JWTの設定
+	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims:     &jwt.JwtCustumClaims{},
+		SigningKey: []byte(*f.JwtSecret),
+		Skipper: func(c echo.Context) bool {
+			// 公開エンドポイントのJWT認証をスキップ
+			return c.Path() == "/users" && c.Request().Method == "POST" ||
+				c.Path() == "/users/:provider/register" && c.Request().Method == "POST" ||
+				c.Path() == "/users/sign_in" && c.Request().Method == "POST"
+		},
+	}))
+
+	// 公開エンドポイント
+	e.POST("/users", handler_users.Post)
+	e.POST("/users/oauth2/:provider/register", handler_oauth2.Register)
+	e.POST("/users/sign_in", handler_users.SignIn)
+
+	// JWT認証必須エンドポイント
+	e.GET("/users", handler_users.Get)
+	e.PATCH("/users", handler_users.PatchOwn)
+	e.DELETE("/users", handler_users.DeleteOwn)
+	e.GET("/users/:id", handler_users.GetById)
+	e.PATCH("/users/:id", handler_users.PatchById)
+	e.DELETE("/users/:id", handler_users.DeleteById)
+	e.POST("/users/oauth2/:provider", handler_oauth2.Post)
+	e.DELETE("/users/oauth2/:provider", handler_oauth2.Delete)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

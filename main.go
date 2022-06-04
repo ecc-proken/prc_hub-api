@@ -87,7 +87,7 @@ func main() {
 	e.POST("/users/oauth2/:provider/register", handler_oauth2.Register)
 	e.POST("/users/sign_in", handler_users.SignIn)
 
-	// Restricted routes
+	// JWT認証必須エンドポイント
 	e.GET("/users", handler_users.Get)
 	e.PATCH("/users", handler_users.PatchOwn)
 	e.DELETE("/users", handler_users.DeleteOwn)

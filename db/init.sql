@@ -38,3 +38,36 @@ CREATE TABLE `github_oauth2_tokens` (
   PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+--
+-- Table structure for table `events`
+--
+
+CREATE TABLE `events` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT UNSIGNED,
+  `title` VARCHAR(255) NOT NULL,
+  `location` VARCHAR(255),
+  `published` TINYINT(1) NOT NULL DEFAULT '1',
+  `completed` TINYINT(1) NOT NULL DEFAULT '0',
+  `auto_notify_documents_enabled` TINYINT(1) NOT NULL DEFAULT '0',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  PRIMARY KEY (id)
+);
+
+--
+-- Table structure for table `event_documents`
+--
+
+CREATE TABLE `event_documents` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `event_id` BIGINT UNSIGNED NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `url` VARCHAR(255) NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  PRIMARY KEY (id)
+);

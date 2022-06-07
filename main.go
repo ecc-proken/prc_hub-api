@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"prc_hub-api/flags"
+	handler_events "prc_hub-api/handler/events"
 	handler_oauth2 "prc_hub-api/handler/oauth_provider"
 	handler_users "prc_hub-api/handler/users"
 	"prc_hub-api/jwt"
@@ -78,7 +79,8 @@ func main() {
 			// 公開エンドポイントのJWT認証をスキップ
 			return c.Path() == "/users" && c.Request().Method == "POST" ||
 				c.Path() == "/users/:provider/register" && c.Request().Method == "POST" ||
-				c.Path() == "/users/sign_in" && c.Request().Method == "POST"
+				c.Path() == "/users/sign_in" && c.Request().Method == "POST" ||
+				c.Path() == "/events" && c.Request().Method == "GET"
 		},
 	}))
 
@@ -86,6 +88,7 @@ func main() {
 	e.POST("/users", handler_users.Post)
 	e.POST("/users/oauth2/:provider/register", handler_oauth2.Register)
 	e.POST("/users/sign_in", handler_users.SignIn)
+	e.GET("/events", handler_events.Get)
 
 	// JWT認証必須エンドポイント
 	e.GET("/users", handler_users.Get)
@@ -96,6 +99,7 @@ func main() {
 	e.DELETE("/users/:id", handler_users.DeleteById)
 	e.POST("/users/oauth2/:provider", handler_oauth2.Post)
 	e.DELETE("/users/oauth2/:provider", handler_oauth2.Delete)
+	e.POST("/events", handler_events.Post)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

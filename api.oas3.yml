@@ -58,6 +58,8 @@ paths:
           description: Unauthorized
         404:
           description: Not found
+        405:
+          description: Method not allowed
         500:
           description: Internal server error
 
@@ -76,6 +78,8 @@ paths:
                 $ref: "#/components/schemas/Token"
         401:
           description: Unauthorized
+        403:
+          description: Forbidden
         415:
           description: Unsupported media type
         422:
@@ -97,6 +101,8 @@ paths:
                 $ref: "#/components/schemas/User"
         401:
           description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
     patch:
@@ -116,6 +122,8 @@ paths:
           description: Invalid request
         401:
           description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
         415:
@@ -134,6 +142,8 @@ paths:
           description: Deleted
         401:
           description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
         500:
@@ -200,7 +210,22 @@ paths:
                 example:
                   - id: 1
                     title: ITシステムの構造
+                    speakers:
+                      - id: 1
+                        name: prc_hub_user
+                        email: user@prchub.com
+                        github_username: ecc-proken
+                        twitter_id: ecc_prc
+                        post_event_availabled: true
+                        admin: false
                     location: "2302"
+                    datetimes:
+                      - start: "2022-05-16T17:15:00+0900"
+                        end: "2022-05-16T18:00:00+0900"
+                      - start: "2022-05-17T17:15:00+0900"
+                        end: "2022-05-17T18:00:00+0900"
+                      - start: "2022-05-20T18:45:00+0900"
+                        end: "2022-05-20T19:30:00:00+0900"
                     published: true
                     completed: true
                     auto_notify_documents_enabled: true
@@ -210,7 +235,22 @@ paths:
                         url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
                   - id: 2
                     title: Git/GitHubハンズオン
+                    speakers:
+                      - id: 1
+                        name: prc_hub_user
+                        email: user@prchub.com
+                        github_username: ecc-proken
+                        twitter_id: ecc_prc
+                        post_event_availabled: true
+                        admin: false
                     location: "2302"
+                    datetimes:
+                      - start: "2022-05-23T17:15:00+0900"
+                        end: "2022-05-23T18:00:00+0900"
+                      - start: "2022-05-24T17:15:00+0900"
+                        end: "2022-05-24T18:00:00+0900"
+                      - start: "2022-05-27T18:45:00+0900"
+                        end: "2022-05-27T19:30:00:00+0900"
                     published: true
                     completed: true
                     auto_notify_documents_enabled: true
@@ -223,7 +263,22 @@ paths:
                         url: https://github.com/ecc-proken/StudyGroup/blob/main/20220523-git_hands_on/DOCUMENT.md
                   - id: 3
                     title: Webサーバハンズオン
+                    speakers:
+                      - id: 1
+                        name: prc_hub_user
+                        email: user@prchub.com
+                        github_username: ecc-proken
+                        twitter_id: ecc_prc
+                        post_event_availabled: true
+                        admin: false
                     location: "2302"
+                    datetimes:
+                      - start: "2022-06-17T18:45:00+0900"
+                        end: "2022-06-17T19:30:00:00+0900"
+                      - start: "2022-04-20T17:15:00+0900"
+                        end: "2022-04-20T18:00:00+0900"
+                      - start: "2022-04-21T17:15:00+0900"
+                        end: "2022-04-21T18:00:00+0900"
                     published: true
                     completed: false
                     auto_notify_documents_enabled: true
@@ -242,6 +297,8 @@ paths:
                 $ref: "#/components/schemas/Event"
         400:
           description: Invalid request
+        403:
+          description: Forbidden
         415:
           description: Unsupported media type
         422:
@@ -264,6 +321,8 @@ paths:
                 $ref: "#/components/schemas/Event"
         401:
           description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
     patch:
@@ -283,6 +342,8 @@ paths:
           description: Invalid request
         401:
           description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
         415:
@@ -298,6 +359,46 @@ paths:
       responses:
         204:
           description: Deleted
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /events/{id}/{event_datetime_id}/join:
+    post:
+      summary: イベント参加登録
+      parameters:
+        - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/event_datetime_id"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventParticipate"
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+    delete:
+      summary: イベント参加登録解除
+      parameters:
+        - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/event_datetime_id"
+      responses:
+        204:
+          description: Success
+        400:
+          description: Bad request
         401:
           description: Unauthorized
         404:
@@ -320,6 +421,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/EventDocument"
+        404:
+          description: Not found
         500:
           description: Internal server error
     post:
@@ -339,6 +442,12 @@ paths:
                   $ref: "#/components/schemas/EventDocument"
         400:
           description: Invalid request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
         415:
           description: Unsupported media type
         422:
@@ -362,6 +471,10 @@ paths:
                   $ref: "#/components/schemas/EventDocument"
         400:
           description: Invalid request
+        403:
+          description: Forbidden
+        404:
+          description: Not found
         415:
           description: Unsupported media type
         422:
@@ -381,6 +494,10 @@ paths:
           description: Success
         400:
           description: Invalid request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
         500:
@@ -398,6 +515,10 @@ paths:
           description: Success
         400:
           description: Invalid request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
         404:
           description: Not found
         500:
@@ -597,8 +718,16 @@ components:
           minimum: 1
         title:
           type: string
+        speakers:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
         location:
           type: string
+        datetimes:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventDatetime"
         published:
           type: boolean
         completed:
@@ -620,7 +749,20 @@ components:
       example:
         id: 1
         title: ITシステムの構造
+        speakers:
+          - id: 1
+            name: prc_hub_user
+            email: user@prchub.com
+            github_username: ecc-proken
+            twitter_id: ecc_prc
+            post_event_availabled: true
+            admin: false
         location: "2302"
+        datetimes:
+          - start: "2022-05-16T17:15:00+0900"
+            end: "2022-05-16T18:00:00+0900"
+          - start: "2022-05-17T17:15:00+0900"
+            end: "2022-05-17T18:00:00+0900"
         published: true
         completed: false
         auto_notify_documents_enabled: true
@@ -634,8 +776,23 @@ components:
       properties:
         title:
           type: string
+        speakers:
+          type: array
+          items:
+            $ref: "#/components/schemas/User/properties/id"
         location:
           type: string
+        datetimes:
+          type: array
+          items:
+            type: object
+            properties:
+              start:
+                type: string
+                format: datetime
+              end:
+                type: string
+                format: datetime
         published:
           type: boolean
           default: true
@@ -649,7 +806,14 @@ components:
         - title
       example:
         title: ITシステムの構造
+        speakers:
+          - 1
         location: "2302"
+        datetimes:
+          - start: "2022-05-16T17:15:00+0900"
+            end: "2022-05-16T18:00:00+0900"
+          - start: "2022-05-17T17:15:00+0900"
+            end: "2022-05-17T18:00:00+0900"
         published: true
         completed: false
         auto_notify_documents_enabled: true
@@ -659,8 +823,24 @@ components:
       properties:
         title:
           type: string
+        speakers:
+          type: array
+          items:
+            type: number
+            minimum: 1
         location:
           type: string
+        datetimes:
+          type: array
+          items:
+            type: object
+            properties:
+              start:
+                type: string
+                format: datetime
+              end:
+                type: string
+                format: datetime
         published:
           type: boolean
         completed:
@@ -669,10 +849,64 @@ components:
           type: boolean
       example:
         title: ITシステムの構造
+        speakers:
+          - 1
         location: "2302"
+        datetimes:
+          - start: "2022-05-16T17:15:00+0900"
+            end: "2022-05-16T18:00:00+0900"
+          - start: "2022-05-17T17:15:00+0900"
+            end: "2022-05-17T18:00:00+0900"
         published: true
         completed: true
         auto_notify_documents_enabled: true
+
+    EventDatetime:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        event_id:
+          type: number
+          minimum: 1
+        start:
+          type: string
+          format: datetime
+        end:
+          type: string
+          format: datetime
+        participate_count:
+          type: integer
+          minimum: 0
+      required:
+        - id
+        - event_id
+        - start
+        - end
+        - participate_count
+      example:
+        id: 1
+        event_id: 1
+        start: "2022-05-16T17:15:00+0900"
+        end: "2022-05-16T18:00:00+0900"
+        participate_count: 18
+
+    EventParticipate:
+      type: object
+      properties:
+        event_datetime_id:
+          type: number
+          minimum: 1
+        user_id:
+          type: number
+          minimum: 1
+      required:
+        - event_datetime_id
+        - user_id
+      example:
+        event_datetime_id: 1
+        user_id: 1
 
     EventDocument:
       type: object
@@ -757,6 +991,13 @@ components:
   parameters:
     id:
       name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 1
+    event_datetime_id:
+      name: event_datetime_id
       in: path
       required: true
       schema:

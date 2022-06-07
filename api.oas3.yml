@@ -220,11 +220,17 @@ paths:
                         admin: false
                     location: "2302"
                     datetimes:
-                      - start: "2022-05-16T17:15:00+0900"
+                      - id: 1
+                        event_id: 1
+                        start: "2022-05-16T17:15:00+0900"
                         end: "2022-05-16T18:00:00+0900"
-                      - start: "2022-05-17T17:15:00+0900"
+                      - id: 2
+                        event_id: 1
+                        start: "2022-05-17T17:15:00+0900"
                         end: "2022-05-17T18:00:00+0900"
-                      - start: "2022-05-20T18:45:00+0900"
+                      - id: 3
+                        event_id: 1
+                        start: "2022-05-20T18:45:00+0900"
                         end: "2022-05-20T19:30:00:00+0900"
                     published: true
                     completed: true
@@ -245,11 +251,17 @@ paths:
                         admin: false
                     location: "2302"
                     datetimes:
-                      - start: "2022-05-23T17:15:00+0900"
+                      - id: 4
+                        event_id: 2
+                        start: "2022-05-23T17:15:00+0900"
                         end: "2022-05-23T18:00:00+0900"
-                      - start: "2022-05-24T17:15:00+0900"
+                      - id: 5
+                        event_id: 2
+                        start: "2022-05-24T17:15:00+0900"
                         end: "2022-05-24T18:00:00+0900"
-                      - start: "2022-05-27T18:45:00+0900"
+                      - id: 6
+                        event_id: 2
+                        start: "2022-05-27T18:45:00+0900"
                         end: "2022-05-27T19:30:00:00+0900"
                     published: true
                     completed: true
@@ -273,11 +285,17 @@ paths:
                         admin: false
                     location: "2302"
                     datetimes:
-                      - start: "2022-06-17T18:45:00+0900"
+                      - id: 7
+                        event_id: 3
+                        start: "2022-06-17T18:45:00+0900"
                         end: "2022-06-17T19:30:00:00+0900"
-                      - start: "2022-04-20T17:15:00+0900"
+                      - id: 8
+                        event_id: 3
+                        start: "2022-04-20T17:15:00+0900"
                         end: "2022-04-20T18:00:00+0900"
-                      - start: "2022-04-21T17:15:00+0900"
+                      - id: 9
+                        event_id: 3
+                        start: "2022-04-21T17:15:00+0900"
                         end: "2022-04-21T18:00:00+0900"
                     published: true
                     completed: false
@@ -759,9 +777,13 @@ components:
             admin: false
         location: "2302"
         datetimes:
-          - start: "2022-05-16T17:15:00+0900"
+          - id: 1
+            event_id: 1
+            start: "2022-05-16T17:15:00+0900"
             end: "2022-05-16T18:00:00+0900"
-          - start: "2022-05-17T17:15:00+0900"
+          - id: 2
+            event_id: 1
+            start: "2022-05-17T17:15:00+0900"
             end: "2022-05-17T18:00:00+0900"
         published: true
         completed: false
@@ -794,6 +816,8 @@ components:
               end:
                 type: string
                 format: datetime
+            required:
+              - start
         published:
           type: boolean
           default: true
@@ -842,6 +866,8 @@ components:
               end:
                 type: string
                 format: datetime
+            required:
+              - start
         published:
           type: boolean
         completed:
@@ -885,7 +911,6 @@ components:
         - event_id
         - start
         - end
-        - participate_count
       example:
         id: 1
         event_id: 1

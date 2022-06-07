@@ -100,7 +100,9 @@ func Get(query GetQuery, userId *uint64, admin bool) (events []Event, err error)
 			tmpEvent.Documents = append(tmpEvent.Documents, EventDocument{*tmpDocId, *tmpDocName, *tmpDocUrl})
 		}
 	}
-	events = append(events, *tmpEvent)
+	if tmpEvent != nil {
+		events = append(events, *tmpEvent)
+	}
 
 	return
 }

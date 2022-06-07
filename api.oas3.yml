@@ -411,30 +411,31 @@ components:
         id:
           type: number
           minimum: 1
-          example: 1
         name:
           type: string
-          example: prc_hub_user
         email:
           type: string
           format: email
-          example: user@prchub.com
         github_username:
           type: string
-          example: ecc-proken
         twitter_id:
           type: string
-          example: ecc_prc
         post_event_availabled:
           type: boolean
-          example: true
         admin:
           type: boolean
-          example: false
       required:
         - id
         - name
         - email
+      example:
+        id: 1
+        name: prc_hub_user
+        email: user@prchub.com
+        github_username: ecc-proken
+        twitter_id: ecc_prc
+        post_event_availabled: true
+        admin: false
 
     LoginBody:
       type: object
@@ -442,14 +443,15 @@ components:
         email:
           type: string
           format: email
-          example: user@prchub.com
         password:
           type: string
           format: password
-          example: prc_hub
       required:
         - email
         - password
+      example:
+        email: user@prchub.com
+        password: prc_hub
 
     UserWithToken:
       type: object
@@ -457,68 +459,71 @@ components:
         id:
           type: number
           minimum: 1
-          example: 1
         name:
           type: string
-          example: prc_hub_user
         email:
           type: string
           format: email
-          example: user@prchub.com
         github_username:
           type: string
-          example: ecc-proken
         twitter_id:
           type: string
-          example: ecc_prc
         post_event_availabled:
           type: boolean
-          example: true
         admin:
           type: boolean
-          example: false
         token:
           type: string
-          example: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
       required:
         - id
         - name
         - email
         - token
+      example:
+        id: 1
+        name: prc_hub_user
+        email: user@prchub.com
+        github_username: ecc-proken
+        twitter_id: ecc_prc
+        post_event_availabled: true
+        admin: false
+        token: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 
     Token:
       type: object
       properties:
         token:
           type: string
-          example: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
       required:
         - token
+      example:
+        token: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 
     CreateUserBody:
       type: object
       properties:
         name:
           type: string
-          example: prc_hub_user
         email:
           type: string
           format: email
-          example: user@prchub.com
         password:
           type: string
           format: password
-          example: prc_hub
         github_username:
           type: string
-          example: ecc-proken
         twitter_id:
           type: string
-          example: ecc_prc
       required:
         - name
         - email
         - password
+      example:
+        name: prc_hub_user
+        email: user@prchub.com
+        password: prc_hub
+        github_username: ecc-proken
+        twitter_id: ecc_prc
 
     CreateUserOverOauth2Body:
       type: object
@@ -562,26 +567,27 @@ components:
       properties:
         name:
           type: string
-          example: prc_hub_user
         email:
           type: string
-          example: user@prchub.com
         password:
           type: string
           format: password
-          example: prc_hub
         github_username:
           type: string
-          example: ecc-proken
         twitter_id:
           type: string
-          example: ecc_prc
         post_event_availabled:
           type: boolean
-          example: true
         admin:
           type: boolean
-          example: false
+      example:
+        name: prc_hub_user
+        email: user@prchub.com
+        password: prc_hub
+        github_username: ecc-proken
+        twitter_id: ecc_prc
+        post_event_availabled: true
+        admin: false
 
     Event:
       type: object
@@ -589,89 +595,84 @@ components:
         id:
           type: number
           minimum: 1
-          example: 1
         title:
           type: string
-          example: ITシステムの構造
         location:
           type: string
-          example: "2302"
         published:
           type: boolean
-          example: true
         completed:
           type: boolean
-          example: false
         auto_notify_documents_enabled:
           type: boolean
-          example: true
           description: |
             `true`の場合`event`情報更新後`completed: true`かつ`documents`がある場合にLINE notifyにリクエスト
         documents:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: number
-                minimum: 1
-                example: 1
-              name:
-                type: string
-                example: スライド
-              url:
-                type: string
-                format: uri
-                example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+            $ref: "#/components/schemas/EventDocument"
       required:
         - id
         - title
         - published
         - completed
         - auto_notify_documents_enabled
+      example:
+        id: 1
+        title: ITシステムの構造
+        location: "2302"
+        published: true
+        completed: false
+        auto_notify_documents_enabled: true
+        documents:
+          - id: 1
+            name: スライド
+            url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
 
     CreateEventBody:
       type: object
       properties:
         title:
           type: string
-          example: ITシステムの構造
         location:
           type: string
-          example: "2302"
         published:
           type: boolean
           default: true
-          example: true
         completed:
           type: boolean
           default: false
-          example: false
         auto_notify_documents_enabled:
           type: boolean
           default: false
-          example: true
       required:
         - title
+      example:
+        title: ITシステムの構造
+        location: "2302"
+        published: true
+        completed: false
+        auto_notify_documents_enabled: true
 
     UpdateEventBody:
       type: object
       properties:
         title:
           type: string
-          example: ITシステムの構造
         location:
           type: string
-          example: "2302"
         published:
           type: boolean
-          example: true
         completed:
           type: boolean
-          example: true
         auto_notify_documents_enabled:
           type: boolean
-          example: true
+      example:
+        title: ITシステムの構造
+        location: "2302"
+        published: true
+        completed: true
+        auto_notify_documents_enabled: true
 
     EventDocument:
       type: object
@@ -679,18 +680,19 @@ components:
         id:
           type: number
           minimum: 1
-          example: 1
         name:
           type: string
-          example: スライド
         url:
           type: string
           format: uri
-          example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
       required:
         - id
         - name
         - url
+      example:
+        id: 1
+        name: スライド
+        url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
 
     CreateEventDocumentsBody:
       type: array
@@ -703,11 +705,12 @@ components:
           url:
             type: string
             format: uri
-            example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
         required:
-          - id
           - name
           - url
+        example:
+          name: スライド
+          url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
 
   requestBodies:
     LoginBody:

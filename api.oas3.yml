@@ -26,6 +26,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+        500:
+          description: Internal server error
     post:
       summary: ユーザー登録
       security: []
@@ -195,6 +197,38 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Event"
+                example:
+                  - id: 1
+                    title: ITシステムの構造
+                    location: "2302"
+                    published: true
+                    completed: true
+                    auto_notify_documents_enabled: true
+                    documents:
+                      - id: 1
+                        name: スライド
+                        url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+                  - id: 2
+                    title: Git/GitHubハンズオン
+                    location: "2302"
+                    published: true
+                    completed: true
+                    auto_notify_documents_enabled: true
+                    documents:
+                      - id: 1
+                        name: スライド
+                        url: https://github.com/ecc-proken/StudyGroup/blob/main/20220523-git_hands_on/slide.pdf
+                      - id: 2
+                        name: ハンズオン資料
+                        url: https://github.com/ecc-proken/StudyGroup/blob/main/20220523-git_hands_on/DOCUMENT.md
+                  - id: 3
+                    title: Webサーバハンズオン
+                    location: "2302"
+                    published: true
+                    completed: false
+                    auto_notify_documents_enabled: true
+        500:
+          description: Internal server error
     post:
       summary: イベント登録
       requestBody:
@@ -271,24 +305,101 @@ paths:
         500:
           description: Internal server error
 
-  /events/{id}/line_notify_hook:
-    post:
-      summary: アンケートURL・資料URLの送信
-      description: |
-        アンケートURL・資料URLの送信。  
-        何を送るかはリクエストに情報を含める
+  /events/{id}/documents:
+    get:
+      summary: イベント資料一覧
       parameters:
         - $ref: "#/components/parameters/id"
-        - $ref: "#/components/parameters/scope"
+      security: []
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventDocument"
+        500:
+          description: Internal server error
+    post:
+      summary: イベント資料登録
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/CreateEventDocumentsBody"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventDocument"
         400:
           description: Invalid request
         415:
           description: Unsupported media type
         422:
           description: Unprocessable entity
+        500:
+          description: Internal server error
+    put:
+      summary: イベント資料変更
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/CreateEventDocumentsBody"
+      responses:
+        200:
+          description: Replaced
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventDocument"
+        400:
+          description: Invalid request
+        415:
+          description: Unsupported media type
+        422:
+          description: Unprocessable entity
+        500:
+          description: Internal server error
+
+  /events/{id}/webhook/line_notify:
+    post:
+      summary: イベント情報・アンケートURLの送信
+      description: |
+        アンケートURL・資料URLの送信。
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        200:
+          description: Success
+        400:
+          description: Invalid request
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+  /events/{id}/documents/webhook/line_notify:
+    post:
+      summary: 資料URLの送信
+      description: |
+        資料URLの送信。
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        200:
+          description: Success
+        400:
+          description: Invalid request
+        404:
+          description: Not found
         500:
           description: Internal server error
 
@@ -307,7 +418,7 @@ components:
         email:
           type: string
           format: email
-          example: user@prc_hub.com
+          example: user@prchub.com
         github_username:
           type: string
           example: ecc-proken
@@ -331,7 +442,7 @@ components:
         email:
           type: string
           format: email
-          example: user@prc_hub.com
+          example: user@prchub.com
         password:
           type: string
           format: password
@@ -353,7 +464,7 @@ components:
         email:
           type: string
           format: email
-          example: user@prc_hub.com
+          example: user@prchub.com
         github_username:
           type: string
           example: ecc-proken
@@ -368,6 +479,7 @@ components:
           example: false
         token:
           type: string
+          example: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
       required:
         - id
         - name
@@ -379,6 +491,7 @@ components:
       properties:
         token:
           type: string
+          example: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
       required:
         - token
 
@@ -391,7 +504,7 @@ components:
         email:
           type: string
           format: email
-          example: user@prc_hub.com
+          example: user@prchub.com
         password:
           type: string
           format: password
@@ -420,6 +533,8 @@ components:
           type: integer
         password:
           type: string
+          format: password
+          example: prc_hub
       required:
         - access_token
         - expire_in
@@ -447,12 +562,20 @@ components:
       properties:
         name:
           type: string
+          example: prc_hub_user
         email:
           type: string
-          format: email
+          example: user@prchub.com
         password:
           type: string
           format: password
+          example: prc_hub
+        github_username:
+          type: string
+          example: ecc-proken
+        twitter_id:
+          type: string
+          example: ecc_prc
         post_event_availabled:
           type: boolean
           example: true
@@ -472,14 +595,14 @@ components:
           example: ITシステムの構造
         location:
           type: string
-          example: 2303
+          example: "2302"
         published:
           type: boolean
           example: true
         completed:
           type: boolean
           example: false
-        auto_notify_documents:
+        auto_notify_documents_enabled:
           type: boolean
           example: true
           description: |
@@ -505,7 +628,7 @@ components:
         - title
         - published
         - completed
-        - auto_notify_documents
+        - auto_notify_documents_enabled
 
     CreateEventBody:
       type: object
@@ -515,7 +638,7 @@ components:
           example: ITシステムの構造
         location:
           type: string
-          example: 2303
+          example: "2302"
         published:
           type: boolean
           default: true
@@ -524,26 +647,10 @@ components:
           type: boolean
           default: false
           example: false
-        auto_notify_documents:
+        auto_notify_documents_enabled:
           type: boolean
           default: false
           example: true
-        documents:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: number
-                minimum: 1
-                example: 1
-              name:
-                type: string
-                example: スライド
-              url:
-                type: string
-                format: uri
-                example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
       required:
         - title
 
@@ -555,32 +662,52 @@ components:
           example: ITシステムの構造
         location:
           type: string
-          example: 2303
+          example: "2302"
         published:
           type: boolean
           example: true
         completed:
           type: boolean
           example: true
-        auto_notify_documents:
+        auto_notify_documents_enabled:
           type: boolean
           example: true
-        documents:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: number
-                minimum: 1
-                example: 1
-              name:
-                type: string
-                example: スライド
-              url:
-                type: string
-                format: uri
-                example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+
+    EventDocument:
+      type: object
+      properties:
+        id:
+          type: number
+          minimum: 1
+          example: 1
+        name:
+          type: string
+          example: スライド
+        url:
+          type: string
+          format: uri
+          example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+      required:
+        - id
+        - name
+        - url
+
+    CreateEventDocumentsBody:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            example: スライド
+          url:
+            type: string
+            format: uri
+            example: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
+        required:
+          - id
+          - name
+          - url
 
   requestBodies:
     LoginBody:
@@ -618,6 +745,11 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/UpdateEventBody"
+    CreateEventDocumentsBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateEventDocumentsBody"
 
   parameters:
     id:
@@ -626,15 +758,7 @@ components:
       required: true
       schema:
         type: integer
-    scope:
-      name: scope
-      in: query
-      required: true
-      schema:
-        type: string
-        enum:
-          - info
-          - documents
+        example: 1
     oauth_providers:
       name: oauth_providers
       in: path

@@ -26,15 +26,15 @@ func Get(query GetQuery) (users []User, err error) {
 		queryStr += " admin = ? AND"
 		queryParams = append(queryParams, query.Admin)
 	}
-	if query.Admin != nil {
+	if query.Name != nil {
 		queryStr += " name = ? AND"
 		queryParams = append(queryParams, query.Name)
 	}
-	if query.Admin != nil {
-		queryStr += " admin LIKE ? AND"
-		queryParams = append(queryParams, query.NameContain)
+	if query.NameContain != nil {
+		queryStr += " name LIKE ? AND"
+		queryParams = append(queryParams, "%"+*query.NameContain+"%")
 	}
-	if query.Admin != nil {
+	if query.Email != nil {
 		queryStr += " email = ? AND"
 		queryParams = append(queryParams, query.Email)
 	}

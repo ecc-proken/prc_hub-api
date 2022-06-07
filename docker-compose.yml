@@ -56,7 +56,7 @@ services:
     image: stoplight/prism:4
     command: 'mock -h 0.0.0.0 /tmp/api.oas3.yml'
     volumes:
-      - ./openApi.yml:/tmp/api.oas3.yml:ro
+      - ./api.oas3.yml:/tmp/api.oas3.yml:ro
     ports:
       # Serve the mocked API locally as available on port 8080
       - '8080:4010'

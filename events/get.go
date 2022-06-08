@@ -7,7 +7,7 @@ import (
 func GetById(id uint64) (events []Event, err error) {
 	rows, err := mysql.Read(
 		`SELECT
-			e.id, e.user_id, e.title, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
+			e.id, e.user_id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
 			doc.id, doc.name, doc.url
 		FROM events e
 		LEFT JOIN event_documents doc WHERE e.id = doc.event_id
@@ -32,7 +32,7 @@ func GetById(id uint64) (events []Event, err error) {
 		)
 		// 変数に割り当て
 		err = rows.Scan(
-			&e.Id, &e.UserId, &e.Title, &e.Location, &e.Published, &e.Completed, &e.AutoNotifyDocuments,
+			&e.Id, &e.UserId, &e.Title, &e.Description, &e.Location, &e.Published, &e.Completed, &e.AutoNotifyDocuments,
 			&tmpDocId, &tmpDocName, &tmpDocUrl,
 		)
 		if err != nil {

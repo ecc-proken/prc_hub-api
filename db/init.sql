@@ -47,6 +47,7 @@ CREATE TABLE `events` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT UNSIGNED,
   `title` VARCHAR(255) NOT NULL,
+  `description` VARCHAR(255),
   `location` VARCHAR(255),
   `published` TINYINT(1) NOT NULL DEFAULT '1',
   `completed` TINYINT(1) NOT NULL DEFAULT '0',

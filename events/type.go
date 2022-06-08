@@ -4,6 +4,7 @@ type Event struct {
 	Id                  uint64          `json:"id"`
 	UserId              uint64          `json:"user_id,omitempty"`
 	Title               string          `json:"title"`
+	Description         *string         `json:"description,omitempty"`
 	Location            string          `json:"location,omitempty"`
 	Published           bool            `json:"published"`
 	Completed           bool            `json:"completed"`

@@ -210,6 +210,9 @@ paths:
                 example:
                   - id: 1
                     title: ITシステムの構造
+                    description: |-
+                      Webサイトやモバイルアプリなどのサービスがどのようにして成り立っているのか全体像を勉強します！
+                      図を使って基礎的なことを説明するのでかなりわかりやすいと思います！
                     speakers:
                       - id: 1
                         name: prc_hub_user
@@ -241,6 +244,9 @@ paths:
                         url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
                   - id: 2
                     title: Git/GitHubハンズオン
+                    description: |-
+                      エンジニア必須スキルのGitとGitHubのハンズオンを行います。
+                      Git/GitHubはITシステムを開発する上でよく利用する技術・サービスです。
                     speakers:
                       - id: 1
                         name: prc_hub_user
@@ -275,6 +281,9 @@ paths:
                         url: https://github.com/ecc-proken/StudyGroup/blob/main/20220523-git_hands_on/DOCUMENT.md
                   - id: 3
                     title: Webサーバハンズオン
+                    description: |-
+                      4年生が実際に開発しているWebサイトを題材にハンズオンを行います。
+                      題材ははNext.js(React.js/node.js)というWebサイトなどを作るJavaScriptのフレームワークを利用しています。
                     speakers:
                       - id: 1
                         name: prc_hub_user
@@ -503,7 +512,7 @@ paths:
   /events/{id}/webhook/line_notify:
     post:
       summary: イベント情報・アンケートURLの送信
-      description: |
+      description: |-
         アンケートURL・資料URLの送信。
       parameters:
         - $ref: "#/components/parameters/id"
@@ -524,7 +533,7 @@ paths:
   /events/{id}/documents/webhook/line_notify:
     post:
       summary: 資料URLの送信
-      description: |
+      description: |-
         資料URLの送信。
       parameters:
         - $ref: "#/components/parameters/id"
@@ -736,6 +745,8 @@ components:
           minimum: 1
         title:
           type: string
+        description:
+          type: string
         speakers:
           type: array
           items:
@@ -752,7 +763,7 @@ components:
           type: boolean
         auto_notify_documents_enabled:
           type: boolean
-          description: |
+          description: |-
             `true`の場合`event`情報更新後`completed: true`かつ`documents`がある場合にLINE notifyにリクエスト
         documents:
           type: array
@@ -767,6 +778,9 @@ components:
       example:
         id: 1
         title: ITシステムの構造
+        description: |-
+          Webサイトやモバイルアプリなどのサービスがどのようにして成り立っているのか全体像を勉強します！
+          図を使って基礎的なことを説明するのでかなりわかりやすいと思います！
         speakers:
           - id: 1
             name: prc_hub_user
@@ -797,6 +811,8 @@ components:
       type: object
       properties:
         title:
+          type: string
+        description:
           type: string
         speakers:
           type: array
@@ -831,6 +847,9 @@ components:
         - title
       example:
         title: ITシステムの構造
+        description: |-
+          Webサイトやモバイルアプリなどのサービスがどのようにして成り立っているのか全体像を勉強します！
+          図を使って基礎的なことを説明するのでかなりわかりやすいと思います！
         speakers:
           - 1
         location: "2302"
@@ -847,6 +866,8 @@ components:
       type: object
       properties:
         title:
+          type: string
+        description:
           type: string
         speakers:
           type: array
@@ -876,6 +897,9 @@ components:
           type: boolean
       example:
         title: ITシステムの構造
+        description: |-
+          Webサイトやモバイルアプリなどのサービスがどのようにして成り立っているのか全体像を勉強します！
+          図を使って基礎的なことを説明するのでかなりわかりやすいと思います！
         speakers:
           - 1
         location: "2302"

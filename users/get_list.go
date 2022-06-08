@@ -6,11 +6,12 @@ import (
 )
 
 type GetQuery struct {
-	Name                *string `json:"name" validate:"omitempty"`
-	NameContain         *string `json:"name_contain" validate:"omitempty"`
-	Email               *string `json:"email" validate:"omitempty"`
-	PostEventAvailabled *bool   `json:"post_event_availabled" validate:"omitempty"`
-	Admin               *bool   `json:"admin" validate:"omitempty"`
+	Name                *string  `json:"name" validate:"omitempty"`
+	NameContain         *string  `json:"name_contain" validate:"omitempty"`
+	Email               *string  `json:"email" validate:"omitempty"`
+	PostEventAvailabled *bool    `json:"post_event_availabled" validate:"omitempty"`
+	Admin               *bool    `json:"admin" validate:"omitempty"`
+	Ids                 []uint64 `json:"-" validate:"omitempty"`
 }
 
 func Get(query GetQuery) (users []User, err error) {
@@ -37,6 +38,15 @@ func Get(query GetQuery) (users []User, err error) {
 	if query.Email != nil {
 		queryStr += " email = ? AND"
 		queryParams = append(queryParams, query.Email)
+	}
+	if len(query.Ids) != 0 {
+		queryStr += " id IN ("
+		for _, id := range query.Ids {
+			queryStr += " ?,"
+			queryParams = append(queryParams, id)
+		}
+		queryStr = strings.TrimSuffix(queryStr, ",")
+		queryStr += " ) AND"
 	}
 	queryStr = strings.TrimSuffix(queryStr, " WHERE")
 	queryStr = strings.TrimSuffix(queryStr, " AND")

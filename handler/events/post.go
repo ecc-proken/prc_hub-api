@@ -6,6 +6,7 @@ import (
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
 	"prc_hub-api/users"
+	"strings"
 
 	jwtGo "github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -48,10 +49,19 @@ func Post(c echo.Context) (err error) {
 	}
 
 	// 書込
-	e, err := events.Post(claims.Id, *p)
+	e, notFoundUserIds, err := events.Post(claims.Id, *p)
 	if err != nil {
 		c.Logger().Debug(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
+	}
+	if len(notFoundUserIds) != 0 {
+		msg := "user not found (id:"
+		for _, id := range notFoundUserIds {
+			msg += " " + string(rune(id)) + ","
+		}
+		msg = strings.TrimSuffix(msg, ",")
+		msg += ")"
+		return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": msg}, "	")
 	}
 
 	// 200: Success

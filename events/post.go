@@ -54,24 +54,6 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		return
 	}
 
-	// クエリを作成
-	queryStr2 := "INSERT INTO event_speakers (event_id, user_id) VALUES "
-	var queryParams2 []interface{}
-	for _, v := range post.Speakers {
-		queryStr2 += "(?, ?),"
-		queryParams2 = append(queryParams2, eventId, v)
-	}
-	queryStr2 = strings.TrimSuffix(queryStr2, ",")
-	// 書込
-	_, err = mysql.TxWrite(
-		tx,
-		queryStr2,
-		queryParams2...,
-	)
-	if err != nil {
-		tx.Rollback()
-		return
-	}
 	// ユーザー取得と確認
 	eventSpeakers, err := users.GetEmbed(users.GetEmbedQuery{Ids: post.Speakers})
 	if err != nil {
@@ -92,6 +74,28 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 				notFoundUserIds = append(notFoundUserIds, id)
 			}
 		}
+		if len(notFoundUserIds) != 0 {
+			tx.Rollback()
+			return
+		}
+	}
+	// クエリを作成
+	queryStr2 := "INSERT INTO event_speakers (event_id, user_id) VALUES "
+	var queryParams2 []interface{}
+	for _, v := range post.Speakers {
+		queryStr2 += "(?, ?),"
+		queryParams2 = append(queryParams2, eventId, v)
+	}
+	queryStr2 = strings.TrimSuffix(queryStr2, ",")
+	// 書込
+	_, err = mysql.TxWrite(
+		tx,
+		queryStr2,
+		queryParams2...,
+	)
+	if err != nil {
+		tx.Rollback()
+		return
 	}
 
 	// クエリを作成

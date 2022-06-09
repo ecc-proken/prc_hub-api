@@ -6,6 +6,7 @@ import (
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
 	"prc_hub-api/users"
+	"strconv"
 	"strings"
 
 	jwtGo "github.com/golang-jwt/jwt"
@@ -57,7 +58,7 @@ func Post(c echo.Context) (err error) {
 	if len(notFoundUserIds) != 0 {
 		msg := "user not found (id:"
 		for _, id := range notFoundUserIds {
-			msg += " " + string(rune(id)) + ","
+			msg += " " + strconv.FormatUint(id, 10) + ","
 		}
 		msg = strings.TrimSuffix(msg, ",")
 		msg += ")"

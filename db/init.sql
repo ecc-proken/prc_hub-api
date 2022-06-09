@@ -47,6 +47,7 @@ CREATE TABLE `events` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT UNSIGNED,
   `title` VARCHAR(255) NOT NULL,
+  `description` VARCHAR(255),
   `location` VARCHAR(255),
   `published` TINYINT(1) NOT NULL DEFAULT '1',
   `completed` TINYINT(1) NOT NULL DEFAULT '0',
@@ -54,6 +55,34 @@ CREATE TABLE `events` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  PRIMARY KEY (id)
+);
+
+--
+-- Table structure for table `event_speakers`
+--
+
+CREATE TABLE `event_speakers` (
+  `event_id` BIGINT UNSIGNED NOT NULL,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+);
+
+--
+-- Table structure for table `event_datetimes`
+--
+
+CREATE TABLE `event_datetimes` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `event_id` BIGINT UNSIGNED NOT NULL,
+  `start` DATETIME NOT NULL,
+  `end` DATETIME,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
 

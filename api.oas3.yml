@@ -216,11 +216,8 @@ paths:
                     speakers:
                       - id: 1
                         name: prc_hub_user
-                        email: user@prchub.com
                         github_username: ecc-proken
                         twitter_id: ecc_prc
-                        post_event_availabled: true
-                        admin: false
                     location: "2302"
                     datetimes:
                       - id: 1
@@ -250,11 +247,8 @@ paths:
                     speakers:
                       - id: 1
                         name: prc_hub_user
-                        email: user@prchub.com
                         github_username: ecc-proken
                         twitter_id: ecc_prc
-                        post_event_availabled: true
-                        admin: false
                     location: "2302"
                     datetimes:
                       - id: 4
@@ -287,11 +281,8 @@ paths:
                     speakers:
                       - id: 1
                         name: prc_hub_user
-                        email: user@prchub.com
                         github_username: ecc-proken
                         twitter_id: ecc_prc
-                        post_event_availabled: true
-                        admin: false
                     location: "2302"
                     datetimes:
                       - id: 7
@@ -585,6 +576,30 @@ components:
         post_event_availabled: true
         admin: false
 
+    UserEmbed:
+      type: object
+      properties:
+        id:
+          type: number
+          minimum: 1
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        github_username:
+          type: string
+        twitter_id:
+          type: string
+      required:
+        - id
+        - name
+      example:
+        id: 1
+        name: prc_hub_user
+        github_username: ecc-proken
+        twitter_id: ecc_prc
+
     LoginBody:
       type: object
       properties:
@@ -750,7 +765,7 @@ components:
         speakers:
           type: array
           items:
-            $ref: "#/components/schemas/User"
+            $ref: "#/components/schemas/UserEmbed"
         location:
           type: string
         datetimes:
@@ -784,11 +799,8 @@ components:
         speakers:
           - id: 1
             name: prc_hub_user
-            email: user@prchub.com
             github_username: ecc-proken
             twitter_id: ecc_prc
-            post_event_availabled: true
-            admin: false
         location: "2302"
         datetimes:
           - id: 1

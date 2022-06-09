@@ -80,7 +80,8 @@ func main() {
 			return c.Path() == "/users" && c.Request().Method == "POST" ||
 				c.Path() == "/users/:provider/register" && c.Request().Method == "POST" ||
 				c.Path() == "/users/sign_in" && c.Request().Method == "POST" ||
-				c.Path() == "/events" && c.Request().Method == "GET"
+				c.Path() == "/events" && c.Request().Method == "GET" ||
+				c.Path() == "/events/:id" && c.Request().Method == "GET"
 		},
 	}))
 
@@ -89,6 +90,7 @@ func main() {
 	e.POST("/users/oauth2/:provider/register", handler_oauth2.Register)
 	e.POST("/users/sign_in", handler_users.SignIn)
 	e.GET("/events", handler_events.Get)
+	e.GET("/events/:id", handler_events.GetById)
 
 	// JWT認証必須エンドポイント
 	e.GET("/users", handler_users.Get)
@@ -100,6 +102,8 @@ func main() {
 	e.POST("/users/oauth2/:provider", handler_oauth2.Post)
 	e.DELETE("/users/oauth2/:provider", handler_oauth2.Delete)
 	e.POST("/events", handler_events.Post)
+	e.PATCH("/events/:id", handler_events.PatchById)
+	e.DELETE("/events/:id", handler_events.DeleteById)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

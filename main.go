@@ -100,6 +100,7 @@ func main() {
 	e.POST("/users/oauth2/:provider", handler_oauth2.Post)
 	e.DELETE("/users/oauth2/:provider", handler_oauth2.Delete)
 	e.POST("/events", handler_events.Post)
+	e.GET("/events/:id", handler_events.GetById)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

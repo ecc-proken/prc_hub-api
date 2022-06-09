@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func GetById(id uint64) (events []Event, err error) {
+func GetById(id uint64) (e Event, notFound bool, err error) {
 	rows, err := mysql.Read(
 		`WITH params AS (
 			SELECT ? as event_id
@@ -97,21 +97,6 @@ func GetById(id uint64) (events []Event, err error) {
 				Completed:           *eCompleted,
 				AutoNotifyDocuments: *eAutoNotifyDocuments,
 			}
-		} else if eId != loadingEvent.Id {
-			// Eventが変わった場合
-			// レスポンス用の配列に追加
-			events = append(events, *loadingEvent)
-
-			// 新しく読み込んだEventを保持
-			loadingEvent = &Event{
-				Id:                  eId,
-				Title:               *eTitle,
-				Description:         eDescription,
-				Location:            *eLocation,
-				Published:           *ePublished,
-				Completed:           *eCompleted,
-				AutoNotifyDocuments: *eAutoNotifyDocuments,
-			}
 		} else if uId != nil && uName != nil {
 			// UserをEvent.Speakersに追加
 			loadingEvent.Speakers = append(
@@ -146,9 +131,12 @@ func GetById(id uint64) (events []Event, err error) {
 			)
 		}
 	}
-	if loadingEvent != nil {
-		events = append(events, *loadingEvent)
-	}
 
+	if loadingEvent == nil {
+		notFound = true
+		return
+	} else {
+		e = *loadingEvent
+	}
 	return
 }

@@ -101,6 +101,7 @@ func main() {
 	e.DELETE("/users/oauth2/:provider", handler_oauth2.Delete)
 	e.POST("/events", handler_events.Post)
 	e.GET("/events/:id", handler_events.GetById)
+	e.PATCH("/events/:id", handler_events.PatchById)
 	e.DELETE("/events/:id", handler_events.DeleteById)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))

@@ -73,7 +73,7 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		return
 	}
 	// ユーザー取得と確認
-	eventSpeakers, err := users.Get(users.GetQuery{Ids: post.Speakers})
+	eventSpeakers, err := users.GetEmbed(users.GetEmbedQuery{Ids: post.Speakers})
 	if err != nil {
 		tx.Rollback()
 		return

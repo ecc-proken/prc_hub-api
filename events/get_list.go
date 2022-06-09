@@ -2,7 +2,9 @@ package events
 
 import (
 	"prc_hub-api/mysql"
+	"prc_hub-api/users"
 	"strings"
+	"time"
 )
 
 type GetQuery struct {
@@ -15,45 +17,80 @@ type GetQuery struct {
 
 func Get(query GetQuery, userId *uint64, admin bool) (events []Event, err error) {
 	// クエリを作成
-	queryStr :=
+	queryStrBase :=
 		`SELECT
-			e.id, e.user_id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
-			doc.id, doc.name, doc.url
-		FROM events e
-		LEFT JOIN event_documents doc ON e.id = doc.event_id
+			id AS event_id
+		FROM events
 		WHERE`
 	queryParams := []interface{}{}
 
 	if userId != nil && !admin {
-		queryStr += " e.published = true OR e.user_id = ? AND"
+		queryStrBase += " published = true OR user_id = ? AND"
 		queryParams = append(queryParams, userId)
 	}
 	if userId == nil {
-		queryStr += " e.published = true AND"
+		queryStrBase += " published = true AND"
 	}
 	if userId != nil && query.Published != nil {
-		queryStr += " e.published = ? AND"
+		queryStrBase += " published = ? AND"
 		queryParams = append(queryParams, query.Published)
 	}
 	if query.Title != nil {
-		queryStr += " e.title = ? AND"
+		queryStrBase += " title = ? AND"
 		queryParams = append(queryParams, query.Title)
 	}
 	if query.TitleContain != nil {
-		queryStr += " e.title LIKE ? AND"
+		queryStrBase += " title LIKE ? AND"
 		queryParams = append(queryParams, "%"+*query.TitleContain+"%")
 	}
 	if query.Location != nil {
-		queryStr += " e.location = ? AND"
+		queryStrBase += " location = ? AND"
 		queryParams = append(queryParams, query.Location)
 	}
 	if query.LocationContain != nil {
-		queryStr += " e.location LIKE ?"
+		queryStrBase += " location LIKE ?"
 		queryParams = append(queryParams, "%"+*query.LocationContain+"%")
 	}
 
-	queryStr = strings.TrimSuffix(queryStr, "WHERE")
-	queryStr = strings.TrimSuffix(queryStr, "AND")
+	queryStrBase = strings.TrimSuffix(queryStrBase, "WHERE")
+	queryStrBase = strings.TrimSuffix(queryStrBase, "AND")
+
+	queryStr :=
+		`WITH params AS (
+			` + queryStrBase + `
+		)
+		SELECT
+			e.id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
+			null, null, null, null,
+			null, null, null,
+			null, null, null
+		FROM events e
+		WHERE e.id IN (SELECT event_id FROM params)
+		UNION ALL
+		SELECT
+			s.event_id, null, null, null, null, null, null,
+			u.id, u.name, u.github_username, u.twitter_id,
+			null, null, null,
+			null, null, null
+		FROM event_speakers s, users u
+		WHERE s.event_id IN (SELECT event_id FROM params) AND s.user_id = u.id
+		UNION ALL
+		SELECT
+			dt.event_id, null, null, null, null, null, null,
+			null, null, null, null,
+			dt.id, dt.start, dt.end,
+			null, null, null
+		FROM event_datetimes dt
+		WHERE dt.event_id IN (SELECT event_id FROM params)
+		UNION ALL
+		SELECT
+			doc.event_id, null, null, null, null, null, null,
+			null, null, null, null,
+			null, null, null,
+			doc.id, doc.name, doc.url
+		FROM event_documents doc
+		WHERE doc.event_id IN (SELECT event_id FROM params)
+		ORDER BY id`
 
 	rows, err := mysql.Read(queryStr, queryParams...)
 	if err != nil {
@@ -62,46 +99,103 @@ func Get(query GetQuery, userId *uint64, admin bool) (events []Event, err error)
 	defer rows.Close()
 
 	// 読込中Event
-	var tmpEvent *Event
+	var loadingEvent *Event
 	// 1行ずつ読込
 	for rows.Next() {
 		// 読込用変数
-		e := Event{}
 		var (
-			tmpDocId   *uint64
-			tmpDocName *string
-			tmpDocUrl  *string
+			eId                  uint64
+			eTitle               *string
+			eDescription         *string
+			eLocation            *string
+			ePublished           *bool
+			eCompleted           *bool
+			eAutoNotifyDocuments *bool
+
+			uId      *uint64
+			uName    *string
+			uGithub  *string
+			uTwitter *string
+
+			dtId    *uint64
+			dtStart *time.Time
+			dtEnd   *time.Time
+
+			dcId   *uint64
+			dcName *string
+			dcUrl  *string
 		)
 		// 変数に割り当て
 		err = rows.Scan(
-			&e.Id, &e.UserId, &e.Title, &e.Description, &e.Location, &e.Published, &e.Completed, &e.AutoNotifyDocuments,
-			&tmpDocId, &tmpDocName, &tmpDocUrl,
+			&eId, &eTitle, &eDescription, &eLocation, &ePublished, &eCompleted, &eAutoNotifyDocuments,
+			&uId, &uName, &uGithub, &uTwitter,
+			&dtId, &dtStart, &dtEnd,
+			&dcId, &dcName, &dcUrl,
 		)
-		if err != nil {
-			return
-		}
 
-		// 読込中のEventを更新
-		if tmpEvent == nil {
+		if loadingEvent == nil {
 			// 読込中のEventがない場合(初回に実行)
 			// 新しく読み込んだEventを保持
-			tmpEvent = &e
-		} else if tmpEvent.Id != e.Id {
+			loadingEvent = &Event{
+				Id:                  eId,
+				Title:               *eTitle,
+				Description:         eDescription,
+				Location:            *eLocation,
+				Published:           *ePublished,
+				Completed:           *eCompleted,
+				AutoNotifyDocuments: *eAutoNotifyDocuments,
+			}
+		} else if eId != loadingEvent.Id {
 			// Eventが変わった場合
 			// レスポンス用の配列に追加
-			events = append(events, *tmpEvent)
+			events = append(events, *loadingEvent)
+
 			// 新しく読み込んだEventを保持
-			tmpEvent = &e
-		}
-		// EventDocumentを追加
-		if tmpDocId != nil && tmpDocName != nil && tmpDocUrl != nil {
-			// 読込中のEventとIdが一致した場合
-			// EventのDocumentを追加
-			tmpEvent.Documents = append(tmpEvent.Documents, EventDocument{*tmpDocId, *tmpDocName, *tmpDocUrl})
+			loadingEvent = &Event{
+				Id:                  eId,
+				Title:               *eTitle,
+				Description:         eDescription,
+				Location:            *eLocation,
+				Published:           *ePublished,
+				Completed:           *eCompleted,
+				AutoNotifyDocuments: *eAutoNotifyDocuments,
+			}
+		} else if uId != nil && uName != nil {
+			// UserをEvent.Speakersに追加
+			loadingEvent.Speakers = append(
+				loadingEvent.Speakers,
+				users.UserEmbed{
+					Id:             *uId,
+					Name:           *uName,
+					GithubUsername: uGithub,
+					TwitterId:      uTwitter,
+				},
+			)
+		} else if dtId != nil && dtStart != nil {
+			// EventDatetimeをEvent.Datetimesに追加
+			loadingEvent.Datetimes = append(
+				loadingEvent.Datetimes,
+				EventDatetime{
+					Id:      *dtId,
+					EventId: eId,
+					Start:   *dtStart,
+					End:     dtEnd,
+				},
+			)
+		} else if dcId != nil && dcName != nil && dcUrl != nil {
+			// EventDocumentをEvent.Documentsに追加
+			loadingEvent.Documents = append(
+				loadingEvent.Documents,
+				EventDocument{
+					Id:   *dcId,
+					Name: *dcName,
+					Url:  *dcUrl,
+				},
+			)
 		}
 	}
-	if tmpEvent != nil {
-		events = append(events, *tmpEvent)
+	if loadingEvent != nil {
+		events = append(events, *loadingEvent)
 	}
 
 	return

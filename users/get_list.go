@@ -69,3 +69,42 @@ func Get(query GetQuery) (users []User, err error) {
 
 	return
 }
+
+type GetEmbedQuery struct {
+	Ids []uint64 `json:"-" validate:"omitempty"`
+}
+
+func GetEmbed(query GetEmbedQuery) (users []UserEmbed, err error) {
+	// クエリを作成
+	queryStr := "SELECT id, name, github_username, twitter_id FROM users WHERE"
+	queryParams := []interface{}{}
+
+	if len(query.Ids) != 0 {
+		queryStr += " id IN ("
+		for _, id := range query.Ids {
+			queryStr += " ?,"
+			queryParams = append(queryParams, id)
+		}
+		queryStr = strings.TrimSuffix(queryStr, ",")
+		queryStr += " )"
+	}
+	queryStr = strings.TrimSuffix(queryStr, " WHERE")
+
+	// 読込
+	rows, err := mysql.Read(queryStr, queryParams...)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := UserEmbed{}
+		err = rows.Scan(&u.Id, &u.Name, &u.GithubUsername, &u.TwitterId)
+		if err != nil {
+			return
+		}
+		users = append(users, u)
+	}
+
+	return
+}

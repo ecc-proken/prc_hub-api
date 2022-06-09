@@ -10,3 +10,10 @@ type User struct {
 	PostEventAvailabled bool    `json:"post_event_availabled"`
 	Admin               bool    `json:"admin"`
 }
+
+type UserEmbed struct {
+	Id             uint64  `json:"id"`
+	Name           string  `json:"name"`
+	GithubUsername *string `json:"github_username,omitempty"`
+	TwitterId      *string `json:"twiiter_id,omitempty"`
+}

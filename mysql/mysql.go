@@ -12,8 +12,8 @@ var dsn string
 
 // DSN設定
 func SetDSNTCP(user string, password string, host string, port int, db string) string {
-	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", user, password, host, port, db)
-	return fmt.Sprintf("%s:********@tcp(%s:%d)/%s", user, host, port, db)
+	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", user, password, host, port, db)
+	return fmt.Sprintf("%s:********@tcp(%s:%d)/%s?parseTime=true", user, host, port, db)
 }
 
 // DB接続

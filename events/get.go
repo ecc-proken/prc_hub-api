@@ -2,16 +2,47 @@ package events
 
 import (
 	"prc_hub-api/mysql"
+	"prc_hub-api/users"
+	"time"
 )
 
 func GetById(id uint64) (events []Event, err error) {
 	rows, err := mysql.Read(
-		`SELECT
-			e.id, e.user_id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
-			doc.id, doc.name, doc.url
+		`WITH params AS (
+			SELECT ? as event_id
+		)
+		SELECT
+			e.id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
+			null, null, null, null,
+			null, null, null,
+			null, null, null
 		FROM events e
-		LEFT JOIN event_documents doc WHERE e.id = doc.event_id
-		WHERE e.id = ?`,
+		WHERE e.id IN (SELECT event_id FROM params)
+		UNION ALL
+		SELECT
+			s.event_id, null, null, null, null, null, null,
+			u.id, u.name, u.github_username, u.twitter_id,
+			null, null, null,
+			null, null, null
+		FROM event_speakers s, users u
+		WHERE s.event_id IN (SELECT event_id FROM params) AND s.user_id = u.id
+		UNION ALL
+		SELECT
+			dt.event_id, null, null, null, null, null, null,
+			null, null, null, null,
+			dt.id, dt.start, dt.end,
+			null, null, null
+		FROM event_datetimes dt
+		WHERE dt.event_id IN (SELECT event_id FROM params)
+		UNION ALL
+		SELECT
+			doc.event_id, null, null, null, null, null, null,
+			null, null, null, null,
+			null, null, null,
+			doc.id, doc.name, doc.url
+		FROM event_documents doc
+		WHERE doc.event_id IN (SELECT event_id FROM params)
+		ORDER BY id`,
 		id,
 	)
 	if err != nil {
@@ -20,41 +51,103 @@ func GetById(id uint64) (events []Event, err error) {
 	defer rows.Close()
 
 	// 読込中Event
-	var tmpEvent *Event
+	var loadingEvent *Event
 	// 1行ずつ読込
 	for rows.Next() {
 		// 読込用変数
-		e := Event{}
 		var (
-			tmpDocId   *uint64
-			tmpDocName *string
-			tmpDocUrl  *string
+			eId                  uint64
+			eTitle               *string
+			eDescription         *string
+			eLocation            *string
+			ePublished           *bool
+			eCompleted           *bool
+			eAutoNotifyDocuments *bool
+
+			uId      *uint64
+			uName    *string
+			uGithub  *string
+			uTwitter *string
+
+			dtId    *uint64
+			dtStart *time.Time
+			dtEnd   *time.Time
+
+			dcId   *uint64
+			dcName *string
+			dcUrl  *string
 		)
 		// 変数に割り当て
 		err = rows.Scan(
-			&e.Id, &e.UserId, &e.Title, &e.Description, &e.Location, &e.Published, &e.Completed, &e.AutoNotifyDocuments,
-			&tmpDocId, &tmpDocName, &tmpDocUrl,
+			&eId, &eTitle, &eDescription, &eLocation, &ePublished, &eCompleted, &eAutoNotifyDocuments,
+			&uId, &uName, &uGithub, &uTwitter,
+			&dtId, &dtStart, &dtEnd,
+			&dcId, &dcName, &dcUrl,
 		)
-		if err != nil {
-			return
-		}
 
-		// 読込中のEventを更新
-		if tmpEvent == nil {
+		if loadingEvent == nil {
 			// 読込中のEventがない場合(初回に実行)
 			// 新しく読み込んだEventを保持
-			tmpEvent = &e
-		} else if tmpEvent.Id != e.Id {
+			loadingEvent = &Event{
+				Id:                  eId,
+				Title:               *eTitle,
+				Description:         eDescription,
+				Location:            *eLocation,
+				Published:           *ePublished,
+				Completed:           *eCompleted,
+				AutoNotifyDocuments: *eAutoNotifyDocuments,
+			}
+		} else if eId != loadingEvent.Id {
 			// Eventが変わった場合
 			// レスポンス用の配列に追加
-			events = append(events, *tmpEvent)
+			events = append(events, *loadingEvent)
+
 			// 新しく読み込んだEventを保持
-			tmpEvent = &e
-		} else if tmpDocId != nil && tmpDocName != nil && tmpDocUrl != nil {
-			// 読込中のEventとIdが一致した場合
-			// EventのDocumentを追加
-			tmpEvent.Documents = append(tmpEvent.Documents, EventDocument{*tmpDocId, *tmpDocName, *tmpDocUrl})
+			loadingEvent = &Event{
+				Id:                  eId,
+				Title:               *eTitle,
+				Description:         eDescription,
+				Location:            *eLocation,
+				Published:           *ePublished,
+				Completed:           *eCompleted,
+				AutoNotifyDocuments: *eAutoNotifyDocuments,
+			}
+		} else if uId != nil && uName != nil {
+			// UserをEvent.Speakersに追加
+			loadingEvent.Speakers = append(
+				loadingEvent.Speakers,
+				users.UserEmbed{
+					Id:             *uId,
+					Name:           *uName,
+					GithubUsername: uGithub,
+					TwitterId:      uTwitter,
+				},
+			)
+		} else if dtId != nil && dtStart != nil {
+			// EventDatetimeをEvent.Datetimesに追加
+			loadingEvent.Datetimes = append(
+				loadingEvent.Datetimes,
+				EventDatetime{
+					Id:      *dtId,
+					EventId: eId,
+					Start:   *dtStart,
+					End:     dtEnd,
+				},
+			)
+		} else if dcId != nil && dcName != nil && dcUrl != nil {
+			// EventDocumentをEvent.Documentsに追加
+			loadingEvent.Documents = append(
+				loadingEvent.Documents,
+				EventDocument{
+					Id:   *dcId,
+					Name: *dcName,
+					Url:  *dcUrl,
+				},
+			)
 		}
+	}
+	if loadingEvent != nil {
+		events = append(events, *loadingEvent)
 	}
 
 	return

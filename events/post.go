@@ -11,7 +11,7 @@ type PostBody struct {
 	Title               string         `json:"title" validate:"required,gte=1"`
 	Description         *string        `json:"description" validate:"omitempty"`
 	Speakers            []uint64       `json:"speakers" validate:"required,gte=1,dive,gte=1"`
-	Location            string         `json:"location" validate:"omitempty,gte=1"`
+	Location            *string        `json:"location" validate:"omitempty,gte=1"`
 	Datetimes           []PostDatetime `json:"datetimes" validate:"required,gte=1,dive"`
 	Published           bool           `json:"published"`
 	Completed           bool           `json:"completed"`

@@ -11,7 +11,7 @@ type Event struct {
 	Title               string            `json:"title"`
 	Description         *string           `json:"description,omitempty"`
 	Speakers            []users.UserEmbed `json:"speakers,omitempty"`
-	Location            string            `json:"location,omitempty"`
+	Location            *string           `json:"location,omitempty"`
 	Datetimes           []EventDatetime   `json:"datetimes"`
 	Published           bool              `json:"published"`
 	Completed           bool              `json:"completed"`

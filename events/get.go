@@ -92,7 +92,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 				Id:                  eId,
 				Title:               *eTitle,
 				Description:         eDescription,
-				Location:            *eLocation,
+				Location:            eLocation,
 				Published:           *ePublished,
 				Completed:           *eCompleted,
 				AutoNotifyDocuments: *eAutoNotifyDocuments,

@@ -11,14 +11,7 @@ func Unparticipate(datetimeId uint64, userId uint64) (notFound bool, err error) 
 	defer r.Close()
 
 	// 登録済みか確認
-	found := false
-	if r.Next() {
-		err = r.Scan(&found)
-		if err != nil {
-			return
-		}
-	}
-	if !found {
+	if !r.Next() {
 		notFound = true
 		return
 	}

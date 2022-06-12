@@ -1,5 +1,6 @@
 openapi: 3.0.0
-servers: []
+servers:
+  - url: http://localhost:1323
 info:
   description: ""
   version: "1.0.0"
@@ -386,7 +387,7 @@ paths:
         500:
           description: Internal server error
 
-  /events/{id}/{event_datetime_id}/join:
+  /events/{id}/{event_datetime_id}/participate:
     post:
       summary: イベント参加登録
       parameters:

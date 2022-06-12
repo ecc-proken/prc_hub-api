@@ -855,6 +855,8 @@ components:
         auto_notify_documents_enabled:
           type: boolean
           default: false
+        documents:
+          $ref: "#/components/schemas/CreateEventDocumentsBody"
       required:
         - title
       example:
@@ -873,6 +875,9 @@ components:
         published: true
         completed: false
         auto_notify_documents_enabled: true
+        documents:
+          - name: スライド
+            url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
 
     UpdateEventBody:
       type: object
@@ -907,6 +912,8 @@ components:
           type: boolean
         auto_notify_documents_enabled:
           type: boolean
+        documents:
+          $ref: "#/components/schemas/CreateEventDocumentsBody"
       example:
         title: ITシステムの構造
         description: |-
@@ -923,6 +930,9 @@ components:
         published: true
         completed: true
         auto_notify_documents_enabled: true
+        documents:
+          - name: スライド
+            url: https://github.com/ecc-proken/StudyGroup/blob/main/20220516-it_system/slide.pdf
 
     EventDatetime:
       type: object

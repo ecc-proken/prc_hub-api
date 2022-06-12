@@ -33,17 +33,8 @@ func Unparticipate(c echo.Context) (err error) {
 	// id
 	idStr := c.Param("id")
 	// string -> uint64
-	id, err := strconv.ParseUint(idStr, 10, 64)
+	_, err = strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		// 404: Not found
-		return echo.ErrNotFound
-	}
-	e, notFound, err := events.GetById(id)
-	if err != nil {
-		c.Logger().Debug(err)
-		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
-	}
-	if notFound {
 		// 404: Not found
 		return echo.ErrNotFound
 	}
@@ -53,16 +44,6 @@ func Unparticipate(c echo.Context) (err error) {
 	// string -> uint64
 	datetimeId, err := strconv.ParseUint(datetimeIdStr, 10, 64)
 	if err != nil {
-		// 404: Not found
-		return echo.ErrNotFound
-	}
-	notFound = true
-	for _, dt := range e.Datetimes {
-		if datetimeId == dt.Id {
-			notFound = false
-		}
-	}
-	if notFound {
 		// 404: Not found
 		return echo.ErrNotFound
 	}

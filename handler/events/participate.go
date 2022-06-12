@@ -68,14 +68,22 @@ func Participate(c echo.Context) (err error) {
 	}
 
 	// 参加情報を登録
-	ep, notFound, err := events.Participate(datetimeId, u.Id)
+	ep, eventNotFound, datetimeNotFound, userNotFound, err := events.Participate(id, datetimeId, u.Id)
 	if err != nil {
 		c.Logger().Debug(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
-	if notFound {
+	if eventNotFound {
 		// 404: Not found
-		return echo.ErrNotFound
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event not found"}, "	")
+	}
+	if datetimeNotFound {
+		// 404: Not found
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event datetime not found"}, "	")
+	}
+	if userNotFound {
+		// 404: Not found
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "user not found"}, "	")
 	}
 
 	// 200: Success

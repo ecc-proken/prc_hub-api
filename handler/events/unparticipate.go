@@ -40,7 +40,7 @@ func Unparticipate(c echo.Context) (err error) {
 	}
 
 	// datetime id
-	datetimeIdStr := c.Param(":dt_id")
+	datetimeIdStr := c.Param("dt_id")
 	// string -> uint64
 	datetimeId, err := strconv.ParseUint(datetimeIdStr, 10, 64)
 	if err != nil {

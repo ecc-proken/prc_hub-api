@@ -87,6 +87,19 @@ CREATE TABLE `event_datetimes` (
 );
 
 --
+-- Table structure for table `event_participates`
+--
+
+CREATE TABLE `event_participates` (
+  `event_datetime_id` BIGINT UNSIGNED NOT NULL,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`event_datetime_id`) REFERENCES `event_datetimes` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+);
+
+--
 -- Table structure for table `event_documents`
 --
 

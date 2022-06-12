@@ -17,6 +17,6 @@ func Unparticipate(datetimeId uint64, userId uint64) (notFound bool, err error) 
 	}
 
 	// 削除
-	_, err = mysql.Write("DELETE FROM event_participates WHERE datetime_id = ? AND user_id = ?", datetimeId, userId)
+	_, err = mysql.Write("DELETE FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
 	return
 }

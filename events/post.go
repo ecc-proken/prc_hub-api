@@ -35,6 +35,11 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// 書込
 	result1, err := mysql.TxWrite(
@@ -44,20 +49,17 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		userId, post.Title, post.Description, post.Location, post.Published, post.Completed, post.AutoNotifyDocuments,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	// Insertした行のIdを取得
 	eventId, err := result1.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 
 	// ユーザー取得と確認
 	eventSpeakers, err := users.GetEmbed(users.GetEmbedQuery{Ids: post.Speakers})
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	if len(post.Speakers) != len(eventSpeakers) {
@@ -75,7 +77,6 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 			}
 		}
 		if len(notFoundUserIds) != 0 {
-			tx.Rollback()
 			return
 		}
 	}
@@ -94,7 +95,6 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		queryParams2...,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 
@@ -113,12 +113,10 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		queryParams3...,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	eventDatetimeId, err := result3.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	var eventDatetimes []EventDatetime
@@ -149,12 +147,10 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		queryParams4...,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	eventDocumentId, err := result4.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	var eventDocuments []EventDocument

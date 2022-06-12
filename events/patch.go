@@ -34,6 +34,11 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	updated := e
 
@@ -102,7 +107,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		var eventSpeakers []users.UserEmbed
 		eventSpeakers, err = users.GetEmbed(users.GetEmbedQuery{Ids: *p.Speakers})
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		if len(*p.Speakers) != len(eventSpeakers) {
@@ -120,7 +124,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 				}
 			}
 			if len(notFoundUserIds) != 0 {
-				tx.Rollback()
 				return
 			}
 		}
@@ -128,7 +131,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		// 削除
 		_, err = mysql.TxWrite(tx, "DELETE FROM event_speakers WHERE event_id = ?", id)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 
@@ -143,7 +145,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		// 書込
 		_, err = mysql.TxWrite(tx, queryStr2, queryParams2...)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 
@@ -155,7 +156,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		// 削除
 		_, err = mysql.TxWrite(tx, "DELETE FROM event_datetimes WHERE event_id = ?", id)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 
@@ -171,13 +171,11 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		var result3 sql.Result
 		result3, err = mysql.TxWrite(tx, queryStr3, queryParams3...)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		var eventDatetimeId int64
 		eventDatetimeId, err = result3.LastInsertId()
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		var eventDatetimes []EventDatetime
@@ -201,7 +199,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		// 削除
 		_, err = mysql.TxWrite(tx, "DELETE FROM event_documents WHERE event_id = ?", id)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		updated.Documents = nil
@@ -219,7 +216,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 			var result2 sql.Result
 			result2, err = mysql.TxWrite(tx, queryStr4, queryParams4...)
 			if err != nil {
-				tx.Rollback()
 				return
 			}
 			var eventDocumentId int64

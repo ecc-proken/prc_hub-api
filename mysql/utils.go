@@ -36,13 +36,7 @@ func Write(queryStr string, args ...any) (result sql.Result, err error) {
 
 // SELECT
 func TxRead(tx *sql.Tx, queryStr string, args ...any) (rows *sql.Rows, err error) {
-	stmtOut, err := tx.Prepare(queryStr)
-	if err != nil {
-		return
-	}
-	defer stmtOut.Close()
-
-	return stmtOut.Query(args...)
+	return tx.Query(queryStr, args...)
 }
 
 // INSERT, UPDATE, DELETE

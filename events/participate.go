@@ -1,6 +1,8 @@
 package events
 
-import "prc_hub-api/mysql"
+import (
+	"prc_hub-api/mysql"
+)
 
 func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParticipate, eventNotFound bool, datetimeNotFound bool, userNotFound bool, err error) {
 	// トランザクション開始
@@ -8,6 +10,11 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// userを取得
 	r1, err := mysql.TxRead(tx, "SELECT id FROM users WHERE id = ?", userId)
@@ -17,6 +24,10 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	defer r1.Close()
 	if !r1.Next() {
 		userNotFound = true
+		return
+	}
+	err = r1.Close()
+	if err != nil {
 		return
 	}
 
@@ -30,15 +41,23 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 		eventNotFound = true
 		return
 	}
+	err = r2.Close()
+	if err != nil {
+		return
+	}
 
 	// event_datetimeを取得
-	r3, err := mysql.TxRead(tx, "SELECT id FROM event_datetimes WHERE id = ?", eventId)
+	r3, err := mysql.TxRead(tx, "SELECT id FROM event_datetimes WHERE id = ?", datetimeId)
 	if err != nil {
 		return
 	}
 	defer r3.Close()
 	if !r3.Next() {
 		datetimeNotFound = true
+		return
+	}
+	err = r3.Close()
+	if err != nil {
 		return
 	}
 
@@ -50,6 +69,10 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	defer r4.Close()
 	if r4.Next() {
 		// 登録済みの場合は処理をスキップ
+		return
+	}
+	err = r4.Close()
+	if err != nil {
 		return
 	}
 

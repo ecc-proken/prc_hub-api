@@ -30,14 +30,8 @@ type PostEventDocumentBody struct {
 }
 
 func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err error) {
-	// DBに接続
-	db, err := mysql.Open()
-	if err != nil {
-		return
-	}
 	// トランザクション開始
-	defer db.Close()
-	tx, err := db.Begin()
+	tx, err := mysql.Begin()
 	if err != nil {
 		return
 	}

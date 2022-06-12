@@ -29,14 +29,8 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		return
 	}
 
-	// DBに接続
-	db, err := mysql.Open()
-	if err != nil {
-		return
-	}
 	// トランザクション開始
-	defer db.Close()
-	tx, err := db.Begin()
+	tx, err := mysql.Begin()
 	if err != nil {
 		return
 	}

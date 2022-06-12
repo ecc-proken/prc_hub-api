@@ -8,19 +8,25 @@ import (
 )
 
 type PostBody struct {
-	Title               string         `json:"title" validate:"required,gte=1"`
-	Description         *string        `json:"description" validate:"omitempty"`
-	Speakers            []uint64       `json:"speakers" validate:"required,gte=1,dive,gte=1"`
-	Location            *string        `json:"location" validate:"omitempty,gte=1"`
-	Datetimes           []PostDatetime `json:"datetimes" validate:"required,gte=1,dive"`
-	Published           bool           `json:"published"`
-	Completed           bool           `json:"completed"`
-	AutoNotifyDocuments bool           `json:"auto_notify_documents_enabled"`
+	Title               string                  `json:"title" validate:"required,gte=1"`
+	Description         *string                 `json:"description" validate:"omitempty"`
+	Speakers            []uint64                `json:"speakers" validate:"required,gte=1,dive,gte=1"`
+	Location            *string                 `json:"location" validate:"omitempty,gte=1"`
+	Datetimes           []PostDatetime          `json:"datetimes" validate:"required,gte=1,dive"`
+	Published           bool                    `json:"published"`
+	Completed           bool                    `json:"completed"`
+	AutoNotifyDocuments bool                    `json:"auto_notify_documents_enabled"`
+	Documents           []PostEventDocumentBody `json:"documents" validate:"omitempty,dive"`
 }
 
 type PostDatetime struct {
 	Start time.Time  `json:"start" validate:"required"`
 	End   *time.Time `json:"end" validate:"omitempty,gtcsfield=Start"`
+}
+
+type PostEventDocumentBody struct {
+	Name string `json:"name" validate:"required,gte=1"`
+	Url  string `json:"url" validate:"required,gte=1"`
 }
 
 func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err error) {
@@ -134,6 +140,41 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		)
 	}
 
+	// クエリを作成
+	queryStr4 := "INSERT INTO event_documents (event_id, name, url) VALUES "
+	var queryParams4 []interface{}
+	for _, v := range post.Documents {
+		queryStr4 += "(?, ?, ?),"
+		queryParams4 = append(queryParams4, eventId, v.Name, v.Url)
+	}
+	queryStr4 = strings.TrimSuffix(queryStr4, ",")
+	// 書込
+	result4, err := mysql.TxWrite(
+		tx,
+		queryStr4,
+		queryParams4...,
+	)
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	eventDocumentId, err := result4.LastInsertId()
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	var eventDocuments []EventDocument
+	for i, d := range post.Documents {
+		eventDocuments = append(
+			eventDocuments,
+			EventDocument{
+				Id:   uint64(eventDocumentId + int64(i)),
+				Name: d.Name,
+				Url:  d.Url,
+			},
+		)
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return
@@ -149,6 +190,7 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	e.AutoNotifyDocuments = post.AutoNotifyDocuments
 	e.Speakers = eventSpeakers
 	e.Datetimes = eventDatetimes
+	e.Documents = eventDocuments
 
 	return
 }

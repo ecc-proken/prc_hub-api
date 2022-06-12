@@ -8,14 +8,15 @@ import (
 )
 
 type PatchBody struct {
-	Title               *string                   `json:"title" validate:"omitempty,gte=1"`
-	Description         mysql.PatchNullJSONString `json:"description" validate:"omitempty"`
-	Speakers            *[]uint64                 `json:"speakers" validate:"omitempty,gte=1,dive,gte=1"`
-	Location            mysql.PatchNullJSONString `json:"location" validate:"omitempty,gte=1"`
-	Datetimes           *[]PostDatetime           `json:"datetimes" validate:"omitempty,gte=1,dive"`
-	Published           *bool                     `json:"published" validate:"omitempty"`
-	Completed           *bool                     `json:"completed" validate:"omitempty"`
-	AutoNotifyDocuments *bool                     `json:"auto_notify_documents_enabled" validate:"omitempty"`
+	Title               *string                                         `json:"title" validate:"omitempty,gte=1"`
+	Description         mysql.PatchNullJSONString                       `json:"description" validate:"omitempty,dive"`
+	Speakers            *[]uint64                                       `json:"speakers" validate:"omitempty,gte=1,dive,gte=1"`
+	Location            mysql.PatchNullJSONString                       `json:"location" validate:"omitempty,dive"`
+	Datetimes           *[]PostDatetime                                 `json:"datetimes" validate:"omitempty,gte=1,dive"`
+	Published           *bool                                           `json:"published" validate:"omitempty"`
+	Completed           *bool                                           `json:"completed" validate:"omitempty"`
+	AutoNotifyDocuments *bool                                           `json:"auto_notify_documents_enabled" validate:"omitempty"`
+	Documents           mysql.PatchNullJSONSlice[PostEventDocumentBody] `json:"documents" validate:"omitempty,dive"`
 }
 
 func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []uint64, err error) {
@@ -199,6 +200,52 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		}
 
 		updated.Datetimes = eventDatetimes
+	}
+
+	// event_datetimesテーブルを更新(PUT)
+	if p.Documents.Slice != nil {
+		// 削除
+		_, err = mysql.TxWrite(tx, "DELETE FROM event_documents WHERE event_id = ?", id)
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		updated.Documents = nil
+
+		if *p.Documents.Slice != nil && len(**p.Documents.Slice) != 0 {
+			// クエリを作成
+			queryStr4 := "INSERT INTO event_documents (event_id, name, url) VALUES "
+			var queryParams4 []interface{}
+			for _, v := range **p.Documents.Slice {
+				queryStr4 += "(?, ?),"
+				queryParams4 = append(queryParams4, id, v.Name, v.Url)
+			}
+			queryStr4 = strings.TrimSuffix(queryStr4, ",")
+			// 書込
+			var result2 sql.Result
+			result2, err = mysql.TxWrite(tx, queryStr4, queryParams4...)
+			if err != nil {
+				tx.Rollback()
+				return
+			}
+			var eventDocumentId int64
+			eventDocumentId, err = result2.LastInsertId()
+			if err != nil {
+				return
+			}
+			eventDocuments := []EventDocument{}
+			for i, d := range **p.Documents.Slice {
+				eventDocuments = append(
+					eventDocuments,
+					EventDocument{
+						Id:   uint64(eventDocumentId + int64(i)),
+						Name: d.Name,
+						Url:  d.Url,
+					},
+				)
+			}
+			updated.Documents = eventDocuments
+		}
 	}
 
 	err = tx.Commit()

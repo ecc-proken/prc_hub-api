@@ -27,6 +27,7 @@ func Participate(c echo.Context) (err error) {
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	if notFound {
+		// 404: Not found
 		return echo.ErrNotFound
 	}
 
@@ -49,7 +50,7 @@ func Participate(c echo.Context) (err error) {
 	}
 
 	// datetime id
-	datetimeIdStr := c.Param(":dt_id")
+	datetimeIdStr := c.Param("dt_id")
 	// string -> uint64
 	datetimeId, err := strconv.ParseUint(datetimeIdStr, 10, 64)
 	if err != nil {

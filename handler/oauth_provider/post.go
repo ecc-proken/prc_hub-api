@@ -1,7 +1,6 @@
 package oauth_provider
 
 import (
-	"errors"
 	"net/http"
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
@@ -23,7 +22,7 @@ func Post(c echo.Context) (err error) {
 	token := c.Get("user").(*jwtGo.Token)
 	claims, err := jwt.CheckToken(*flags.Get().JwtIssuer, token)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Debug("401: " + err.Error())
 		return c.JSONPretty(http.StatusUnauthorized, map[string]string{"message": err.Error()}, "	")
 	}
 	user_id := claims.Id
@@ -31,10 +30,11 @@ func Post(c echo.Context) (err error) {
 	// Get user
 	u, notFound, err := users.GetById(user_id)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	if notFound {
+		c.Logger().Debug("404: user not found")
 		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "user not found"}, "	")
 	}
 
@@ -44,12 +44,13 @@ func Post(c echo.Context) (err error) {
 	case oauth2.ProviderGitHub.String():
 		if _, err = github.GetClient(); err != nil {
 			// 404: Not found
+			c.Logger().Debug("404: GitHub OAuth2 skipped")
 			return echo.ErrNotFound
 		}
 
 	default:
 		// 404: Not found
-		c.Logger().Debug(errors.New("provider not found"))
+		c.Logger().Debug("404: unknown provider")
 		return echo.ErrNotFound
 	}
 
@@ -59,14 +60,14 @@ func Post(c echo.Context) (err error) {
 		p := new(OAuth2GitHubPost)
 		if err = c.Bind(p); err != nil {
 			// 400: Bad request
-			c.Logger().Debug(err)
+			c.Logger().Debug("400: " + err.Error())
 			return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": err.Error()}, "	")
 		}
 
 		// リクエストボディを検証
 		if err = c.Validate(p); err != nil {
 			// 422: Unprocessable entity
-			c.Logger().Debug(err)
+			c.Logger().Debug("422: " + err.Error())
 			return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
 		}
 
@@ -74,13 +75,13 @@ func Post(c echo.Context) (err error) {
 		var a *github.Client
 		a, err = github.GetClient()
 		if err != nil {
-			c.Logger().Debug(err)
-			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
+			c.Logger().Debug("404: GitHub OAuth2 skipped")
+			return echo.ErrNotFound
 		}
 		var o github.Owner
 		o, err = a.GetOwner(p.AccessToken)
 		if err != nil {
-			c.Logger().Debug(err)
+			c.Logger().Fatal(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 		}
 
@@ -93,7 +94,7 @@ func Post(c echo.Context) (err error) {
 			user_id,
 		)
 		if err != nil {
-			c.Logger().Debug(err)
+			c.Logger().Fatal(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 		}
 
@@ -102,10 +103,12 @@ func Post(c echo.Context) (err error) {
 		tmpUsername := &o.Name
 		_, _, _, notFound, err = users.Patch(user_id, users.PatchBody{GithubUsername: mysql.PatchNullJSONString{String: &tmpUsername}})
 		if err != nil {
+			c.Logger().Fatal(err)
 			return
 		}
 		if notFound {
 			// ユーザー情報変更に失敗
+			c.Logger().Debug("409: connot update user, conflict found")
 			return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": "connot update user, conflict found"}, "	")
 		}
 	}
@@ -113,7 +116,7 @@ func Post(c echo.Context) (err error) {
 	// トークンを生成
 	t, err := jwt.GenerateToken(u, *flags.Get().JwtIssuer, *flags.Get().JwtSecret)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 
@@ -125,5 +128,6 @@ func Post(c echo.Context) (err error) {
 	})
 
 	// 200: Success
+	c.Logger().Debug("200: connect OAuth2 successful")
 	return c.JSONPretty(http.StatusOK, map[string]string{"message": "Success"}, "	")
 }

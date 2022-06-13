@@ -29,7 +29,7 @@ func Register(c echo.Context) (err error) {
 
 	default:
 		// 404: Not found
-		c.Logger().Debug(err)
+		c.Logger().Debug("404: unknown provider")
 		return echo.ErrNotFound
 	}
 
@@ -44,34 +44,34 @@ func Register(c echo.Context) (err error) {
 		p := new(UserPostOverGitHubOAuth2)
 		if err = c.Bind(p); err != nil {
 			// 400: Bad request
-			c.Logger().Debug(err)
+			c.Logger().Debug("400: " + err.Error())
 			return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": err.Error()}, "	")
 		}
 
 		// リクエストボディを検証
 		if err = c.Validate(p); err != nil {
 			// 422: Unprocessable entity
-			c.Logger().Debug(err)
+			c.Logger().Debug("422: " + err.Error())
 			return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
 		}
 
 		// GitHubの登録情報を取得
 		a, err := github.GetClient()
 		if err != nil {
-			c.Logger().Debug(err)
-			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
+			c.Logger().Debug("404: GitHub OAuth2 skipped")
+			return echo.ErrNotFound
 		}
 		// 登録情報の取得
 		o, err := a.GetOwner(p.AccessToken)
 		if err != nil {
-			c.Logger().Debug(err)
+			c.Logger().Fatal(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 		}
 		name = o.Name
 		// primaryEmailの取得
 		e, err := a.GetOwnerPrimaryEmail(p.AccessToken)
 		if err != nil {
-			c.Logger().Debug(err)
+			c.Logger().Fatal(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 		}
 		email = e.Email
@@ -79,17 +79,17 @@ func Register(c echo.Context) (err error) {
 		// 書込
 		u, invalidEmail, usedEmail, err := users.Post(users.PostBody{Name: name, Email: email, Password: p.Password, GithubUsername: &name})
 		if err != nil {
-			c.Logger().Debug(err)
+			c.Logger().Fatal(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 		}
 		if invalidEmail {
 			// 422: Unprocessable entity
-			c.Logger().Debug(err)
+			c.Logger().Debug("422: " + err.Error())
 			return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
 		}
 		if usedEmail {
 			// 400: Bad request
-			c.Logger().Debug("email already used")
+			c.Logger().Debug("400: email already used")
 			return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": "email already used"}, "	")
 		}
 
@@ -102,7 +102,7 @@ func Register(c echo.Context) (err error) {
 			u.Id,
 		)
 		if err != nil {
-			c.Logger().Debug(err)
+			c.Logger().Fatal(err)
 			return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 		}
 	}
@@ -110,21 +110,24 @@ func Register(c echo.Context) (err error) {
 	// トークンを生成
 	t, err := jwt.GenerateToken(u, *flags.Get().JwtIssuer, *flags.Get().JwtSecret)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 
 	// jsonにjwtトークンを追加
 	b, err := json.Marshal(u)
 	if err != nil {
-		return
+		c.Logger().Fatal(err)
+		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	m := map[string]interface{}{"token": t}
 	err = json.Unmarshal(b, &m)
 	if err != nil {
-		return
+		c.Logger().Fatal(err)
+		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 
 	// 200: Success
+	c.Logger().Debug("200: register over OAuth2 successful")
 	return c.JSONPretty(http.StatusOK, m, "	")
 }

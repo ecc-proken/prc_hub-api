@@ -1,7 +1,6 @@
 package users
 
 import (
-	"errors"
 	"net/http"
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
@@ -17,7 +16,7 @@ func GetById(c echo.Context) (err error) {
 	t := c.Get("user").(*jwtGo.Token)
 	claims, err := jwt.CheckToken(*flags.Get().JwtIssuer, t)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Debug("401: " + err.Error())
 		return c.JSONPretty(http.StatusUnauthorized, map[string]string{"message": err.Error()}, "	")
 	}
 
@@ -27,27 +26,31 @@ func GetById(c echo.Context) (err error) {
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		// 404: Not found
+		c.Logger().Debug("404: cannot parse `:id`")
 		return echo.ErrNotFound
 	}
 
 	// 権限確認
 	if !claims.Admin && claims.Id != id {
 		// Admin権限なし 且つ IDが自分ではない
-		return echo.ErrNotFound
+		// 404: Not found
+		c.Logger().Debug("404: user not found")
+		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": "user not found"}, "	")
 	}
 
 	// userを取得
 	u, notFound, err := users.GetById(id)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	if notFound {
 		// 404: Not found
-		c.Logger().Debug(errors.New("user not found"))
-		return echo.ErrNotFound
+		c.Logger().Debug("404: user not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "user not found"}, "	")
 	}
 
 	// 200: Success
+	c.Logger().Debug("200: get user successful")
 	return c.JSONPretty(http.StatusOK, u, "	")
 }

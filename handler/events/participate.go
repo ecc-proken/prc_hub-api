@@ -63,6 +63,6 @@ func Participate(c echo.Context) (err error) {
 	}
 
 	// 200: Success
-	c.Logger().Debug("200: participate  successful")
+	c.Logger().Debug("200: participate successful")
 	return c.JSONPretty(http.StatusOK, ep, "	")
 }

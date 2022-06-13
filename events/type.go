@@ -26,10 +26,11 @@ type EventDocument struct {
 }
 
 type EventDatetime struct {
-	Id      uint64     `json:"id"`
-	EventId uint64     `json:"event_id"`
-	Start   time.Time  `json:"start"`
-	End     *time.Time `json:"end"`
+	Id               uint64     `json:"id"`
+	EventId          uint64     `json:"event_id"`
+	Start            time.Time  `json:"start"`
+	End              *time.Time `json:"end"`
+	ParticipateCount *uint      `json:"participate_count,omitempty"`
 }
 
 type EventParticipate struct {

@@ -14,7 +14,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		SELECT
 			e.id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
 			null, null, null, null,
-			null, null, null,
+			null, null, null, null,
 			null, null, null
 		FROM events e
 		WHERE e.id IN (SELECT event_id FROM params)
@@ -22,7 +22,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		SELECT
 			s.event_id, null, null, null, null, null, null,
 			u.id, u.name, u.github_username, u.twitter_id,
-			null, null, null,
+			null, null, null, null,
 			null, null, null
 		FROM event_speakers s, users u
 		WHERE s.event_id IN (SELECT event_id FROM params) AND s.user_id = u.id
@@ -30,15 +30,18 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		SELECT
 			dt.event_id, null, null, null, null, null, null,
 			null, null, null, null,
-			dt.id, dt.start, dt.end,
+			dt.id, dt.start, dt.end, ep.count,
 			null, null, null
 		FROM event_datetimes dt
+		LEFT JOIN
+			(SELECT event_datetime_id, COUNT(event_datetime_id) AS count FROM event_participates GROUP BY event_datetime_id) AS ep
+		ON dt.id = ep.event_datetime_id
 		WHERE dt.event_id IN (SELECT event_id FROM params)
 		UNION ALL
 		SELECT
 			doc.event_id, null, null, null, null, null, null,
 			null, null, null, null,
-			null, null, null,
+			null, null, null, null,
 			doc.id, doc.name, doc.url
 		FROM event_documents doc
 		WHERE doc.event_id IN (SELECT event_id FROM params)
@@ -72,6 +75,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 			dtId    *uint64
 			dtStart *time.Time
 			dtEnd   *time.Time
+			dpCount *uint
 
 			dcId   *uint64
 			dcName *string
@@ -81,7 +85,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		err = rows.Scan(
 			&eId, &eTitle, &eDescription, &eLocation, &ePublished, &eCompleted, &eAutoNotifyDocuments,
 			&uId, &uName, &uGithub, &uTwitter,
-			&dtId, &dtStart, &dtEnd,
+			&dtId, &dtStart, &dtEnd, &dpCount,
 			&dcId, &dcName, &dcUrl,
 		)
 
@@ -113,10 +117,11 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 			loadingEvent.Datetimes = append(
 				loadingEvent.Datetimes,
 				EventDatetime{
-					Id:      *dtId,
-					EventId: eId,
-					Start:   *dtStart,
-					End:     dtEnd,
+					Id:               *dtId,
+					EventId:          eId,
+					Start:            *dtStart,
+					End:              dtEnd,
+					ParticipateCount: dpCount,
 				},
 			)
 		} else if dcId != nil && dcName != nil && dcUrl != nil {

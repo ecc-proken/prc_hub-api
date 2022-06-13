@@ -29,17 +29,16 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		return
 	}
 
-	// DBに接続
-	db, err := mysql.Open()
-	if err != nil {
-		return
-	}
 	// トランザクション開始
-	defer db.Close()
-	tx, err := db.Begin()
+	tx, err := mysql.Begin()
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	updated := e
 
@@ -96,7 +95,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		queryParams1 = append(queryParams1, id)
 
 		// 更新
-		_, err = mysql.TxWrite(tx, queryStr1, queryParams1...)
+		_, err = tx.Exec(queryStr1, queryParams1...)
 		if err != nil {
 			return
 		}
@@ -108,7 +107,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		var eventSpeakers []users.UserEmbed
 		eventSpeakers, err = users.GetEmbed(users.GetEmbedQuery{Ids: *p.Speakers})
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		if len(*p.Speakers) != len(eventSpeakers) {
@@ -126,15 +124,13 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 				}
 			}
 			if len(notFoundUserIds) != 0 {
-				tx.Rollback()
 				return
 			}
 		}
 
 		// 削除
-		_, err = mysql.TxWrite(tx, "DELETE FROM event_speakers WHERE event_id = ?", id)
+		_, err = tx.Exec("DELETE FROM event_speakers WHERE event_id = ?", id)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 
@@ -147,9 +143,8 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		}
 		queryStr2 = strings.TrimSuffix(queryStr2, ",")
 		// 書込
-		_, err = mysql.TxWrite(tx, queryStr2, queryParams2...)
+		_, err = tx.Exec(queryStr2, queryParams2...)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 
@@ -159,9 +154,8 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 	// event_datetimesテーブルを更新(PUT)
 	if p.Datetimes != nil {
 		// 削除
-		_, err = mysql.TxWrite(tx, "DELETE FROM event_datetimes WHERE event_id = ?", id)
+		_, err = tx.Exec("DELETE FROM event_datetimes WHERE event_id = ?", id)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 
@@ -175,15 +169,13 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		queryStr3 = strings.TrimSuffix(queryStr3, ",")
 		// 書込
 		var result3 sql.Result
-		result3, err = mysql.TxWrite(tx, queryStr3, queryParams3...)
+		result3, err = tx.Exec(queryStr3, queryParams3...)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		var eventDatetimeId int64
 		eventDatetimeId, err = result3.LastInsertId()
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		var eventDatetimes []EventDatetime
@@ -205,9 +197,8 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 	// event_datetimesテーブルを更新(PUT)
 	if p.Documents.Slice != nil {
 		// 削除
-		_, err = mysql.TxWrite(tx, "DELETE FROM event_documents WHERE event_id = ?", id)
+		_, err = tx.Exec("DELETE FROM event_documents WHERE event_id = ?", id)
 		if err != nil {
-			tx.Rollback()
 			return
 		}
 		updated.Documents = nil
@@ -223,9 +214,8 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 			queryStr4 = strings.TrimSuffix(queryStr4, ",")
 			// 書込
 			var result2 sql.Result
-			result2, err = mysql.TxWrite(tx, queryStr4, queryParams4...)
+			result2, err = tx.Exec(queryStr4, queryParams4...)
 			if err != nil {
-				tx.Rollback()
 				return
 			}
 			var eventDocumentId int64

@@ -104,6 +104,8 @@ func main() {
 	e.POST("/events", handler_events.Post)
 	e.PATCH("/events/:id", handler_events.PatchById)
 	e.DELETE("/events/:id", handler_events.DeleteById)
+	e.POST("/events/:id/:dt_id/participate", handler_events.Participate)
+	e.DELETE("/events/:id/:dt_id/participate", handler_events.Unparticipate)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

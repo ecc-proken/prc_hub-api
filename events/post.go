@@ -30,40 +30,35 @@ type PostEventDocumentBody struct {
 }
 
 func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err error) {
-	// DBに接続
-	db, err := mysql.Open()
-	if err != nil {
-		return
-	}
 	// トランザクション開始
-	defer db.Close()
-	tx, err := db.Begin()
+	tx, err := mysql.Begin()
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// 書込
-	result1, err := mysql.TxWrite(
-		tx,
+	result1, err := tx.Exec(
 		`INSERT INTO events (user_id, title, description, location, published, completed, auto_notify_documents_enabled)
 			VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		userId, post.Title, post.Description, post.Location, post.Published, post.Completed, post.AutoNotifyDocuments,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	// Insertした行のIdを取得
 	eventId, err := result1.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 
 	// ユーザー取得と確認
 	eventSpeakers, err := users.GetEmbed(users.GetEmbedQuery{Ids: post.Speakers})
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	if len(post.Speakers) != len(eventSpeakers) {
@@ -81,7 +76,6 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 			}
 		}
 		if len(notFoundUserIds) != 0 {
-			tx.Rollback()
 			return
 		}
 	}
@@ -94,13 +88,11 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}
 	queryStr2 = strings.TrimSuffix(queryStr2, ",")
 	// 書込
-	_, err = mysql.TxWrite(
-		tx,
+	_, err = tx.Exec(
 		queryStr2,
 		queryParams2...,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 
@@ -113,18 +105,15 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}
 	queryStr3 = strings.TrimSuffix(queryStr3, ",")
 	// 書込
-	result3, err := mysql.TxWrite(
-		tx,
+	result3, err := tx.Exec(
 		queryStr3,
 		queryParams3...,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	eventDatetimeId, err := result3.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	var eventDatetimes []EventDatetime
@@ -149,18 +138,15 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}
 	queryStr4 = strings.TrimSuffix(queryStr4, ",")
 	// 書込
-	result4, err := mysql.TxWrite(
-		tx,
+	result4, err := tx.Exec(
 		queryStr4,
 		queryParams4...,
 	)
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	eventDocumentId, err := result4.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 	var eventDocuments []EventDocument

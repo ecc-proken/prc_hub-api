@@ -1,5 +1,6 @@
 openapi: 3.0.0
-servers: []
+servers:
+  - url: http://localhost:1323
 info:
   description: ""
   version: "1.0.0"
@@ -224,14 +225,17 @@ paths:
                         event_id: 1
                         start: "2022-05-16T17:15:00+0900"
                         end: "2022-05-16T18:00:00+0900"
+                        participate_count: 18
                       - id: 2
                         event_id: 1
                         start: "2022-05-17T17:15:00+0900"
                         end: "2022-05-17T18:00:00+0900"
+                        participate_count: 5
                       - id: 3
                         event_id: 1
                         start: "2022-05-20T18:45:00+0900"
                         end: "2022-05-20T19:30:00:00+0900"
+                        participate_count: 7
                     published: true
                     completed: true
                     auto_notify_documents_enabled: true
@@ -255,14 +259,17 @@ paths:
                         event_id: 2
                         start: "2022-05-23T17:15:00+0900"
                         end: "2022-05-23T18:00:00+0900"
+                        participate_count: 18
                       - id: 5
                         event_id: 2
                         start: "2022-05-24T17:15:00+0900"
                         end: "2022-05-24T18:00:00+0900"
+                        participate_count: 5
                       - id: 6
                         event_id: 2
                         start: "2022-05-27T18:45:00+0900"
                         end: "2022-05-27T19:30:00:00+0900"
+                        participate_count: 7
                     published: true
                     completed: true
                     auto_notify_documents_enabled: true
@@ -289,14 +296,17 @@ paths:
                         event_id: 3
                         start: "2022-06-17T18:45:00+0900"
                         end: "2022-06-17T19:30:00:00+0900"
+                        participate_count: 18
                       - id: 8
                         event_id: 3
                         start: "2022-04-20T17:15:00+0900"
                         end: "2022-04-20T18:00:00+0900"
+                        participate_count: 5
                       - id: 9
                         event_id: 3
                         start: "2022-04-21T17:15:00+0900"
                         end: "2022-04-21T18:00:00+0900"
+                        participate_count: 7
                     published: true
                     completed: false
                     auto_notify_documents_enabled: true
@@ -386,7 +396,7 @@ paths:
         500:
           description: Internal server error
 
-  /events/{id}/{event_datetime_id}/join:
+  /events/{id}/{event_datetime_id}/participate:
     post:
       summary: イベント参加登録
       parameters:
@@ -807,10 +817,12 @@ components:
             event_id: 1
             start: "2022-05-16T17:15:00+0900"
             end: "2022-05-16T18:00:00+0900"
+            participate_count: 18
           - id: 2
             event_id: 1
             start: "2022-05-17T17:15:00+0900"
             end: "2022-05-17T18:00:00+0900"
+            participate_count: 5
         published: true
         completed: false
         auto_notify_documents_enabled: true

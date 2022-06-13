@@ -23,3 +23,13 @@ func Open() (*sql.DB, error) {
 	}
 	return sql.Open("mysql", dsn)
 }
+
+// トランザクション開始
+func Begin() (tx *sql.Tx, err error) {
+	d, err := Open()
+	if err != nil {
+		return
+	}
+	tx, err = d.Begin()
+	return
+}

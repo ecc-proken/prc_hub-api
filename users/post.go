@@ -79,13 +79,14 @@ func PostAdmin(post PostBody) (u User, invalidEmail bool, usedEmail bool, err er
 
 	// 書込
 	result, err := mysql.Write(
-		`INSERT INTO users (name, email, password, github_username, twitter_id, post_event_availabled, admin)
-			VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO users (name, email, password, github_username, twitter_id, post_event_availabled, admin, migrated_admin)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		post.Name,
 		post.Email,
 		hashed,
 		post.GithubUsername,
 		post.TwitterId,
+		true,
 		true,
 		true,
 	)

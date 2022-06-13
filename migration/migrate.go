@@ -2,20 +2,31 @@ package migration
 
 import (
 	"prc_hub-api/users"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
-func MigrateAdminUser(email string, passwd string) (adminFound bool, invalidEmail bool, usedEmail bool, err error) {
+func MigrateAdminUser(email string, passwd string) (adminFound bool, updated bool, invalidEmail bool, usedEmail bool, err error) {
 	// Admin権限のuserを取得
-	queryAdmin := true
-	adminUsers, err := users.Get(users.GetQuery{Name: &email, Admin: &queryAdmin})
+	u, notFound, err := users.GetMigratedAdmin()
 	if err != nil {
 		return
 	}
 
-	// admin用メールアドレスが使用済みでないか確認
-	adminFound = false
-	if len(adminUsers) != 0 && adminUsers[0].Email == email {
-		usedEmail = true
+	if !notFound {
+		// 登録済み
+		adminFound = true
+
+		var verify bool
+		verify, err = u.Verify(passwd)
+		if err != nil && err != bcrypt.ErrMismatchedHashAndPassword {
+			return
+		}
+		if email != u.Email || !verify {
+			updated = true
+			// 更新
+			u, invalidEmail, usedEmail, _, err = users.Patch(u.Id, users.PatchBody{Email: &email, Password: &passwd})
+		}
 		return
 	}
 

@@ -16,7 +16,7 @@ type GetQuery struct {
 
 func Get(query GetQuery) (users []User, err error) {
 	// クエリを作成
-	queryStr := "SELECT id, name, email, github_username, twitter_id, post_event_availabled, admin FROM users WHERE"
+	queryStr := "SELECT id, name, email, github_username, twitter_id, post_event_availabled, admin, migrated_admin FROM users WHERE"
 	queryParams := []interface{}{}
 
 	if query.PostEventAvailabled != nil {
@@ -60,7 +60,7 @@ func Get(query GetQuery) (users []User, err error) {
 
 	for rows.Next() {
 		u := User{}
-		err = rows.Scan(&u.Id, &u.Name, &u.Email, &u.GithubUsername, &u.TwitterId, &u.PostEventAvailabled, &u.Admin)
+		err = rows.Scan(&u.Id, &u.Name, &u.Email, &u.GithubUsername, &u.TwitterId, &u.PostEventAvailabled, &u.Admin, &u.MigrateAdmin)
 		if err != nil {
 			return
 		}

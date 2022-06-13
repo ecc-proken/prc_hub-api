@@ -48,16 +48,15 @@ func main() {
 	e.Logger.Info(mysql.SetDSNTCP(*f.MysqlUser, *f.MysqlPasswd, *f.MysqlHost, int(*f.MysqlPORT), *f.MysqlDB))
 
 	// Adminユーザーのマイグレーション
-	adminFound, invalidEmail, usedEmail, err := migration.MigrateAdminUser(*f.AdminEmail, *f.AdminPasswd)
+	adminFound, updated, invalidEmail, usedEmail, err := migration.MigrateAdminUser(*f.AdminEmail, *f.AdminPasswd)
 	if err != nil {
 		e.Logger.Fatal(err.Error())
 		return
 	}
-	if !adminFound && invalidEmail && usedEmail {
+	if invalidEmail || usedEmail {
 		// Adminユーザーのemailが使用済みまたは不正
 		e.Logger.Fatalf("Admin email already used or invalid. %s", *f.AdminEmail)
-	}
-	if !adminFound && !invalidEmail && !usedEmail {
+	} else if !adminFound || updated {
 		// Adminユーザーの追加成功
 		e.Logger.Info("Migrate admin user successful.")
 	}

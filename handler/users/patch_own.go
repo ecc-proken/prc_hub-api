@@ -46,7 +46,7 @@ func PatchOwn(c echo.Context) (err error) {
 			c.Logger().Debug("403: you cannot change user authority")
 			return c.JSONPretty(http.StatusForbidden, map[string]string{"message": "you cannot change user authority"}, "	")
 		}
-	} else if claims.Email == *flags.Get().AdminEmail &&
+	} else if claims.MigratedAdmin &&
 		(p.PostEventAvailabled != nil && !*p.PostEventAvailabled || p.Admin != nil && !*p.Admin) {
 		// Adminの権限は変更不可
 		c.Logger().Debug("400: cannot change admin user authority")

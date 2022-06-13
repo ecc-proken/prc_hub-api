@@ -9,6 +9,7 @@ type User struct {
 	TwitterId           *string `json:"twiiter_id,omitempty"`
 	PostEventAvailabled bool    `json:"post_event_availabled"`
 	Admin               bool    `json:"admin"`
+	MigrateAdmin        bool    `json:"-"`
 }
 
 type UserEmbed struct {

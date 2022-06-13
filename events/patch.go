@@ -2,6 +2,7 @@ package events
 
 import (
 	"database/sql"
+	"errors"
 	"prc_hub-api/mysql"
 	"prc_hub-api/users"
 	"strings"
@@ -17,6 +18,21 @@ type PatchBody struct {
 	Completed           *bool                                           `json:"completed" validate:"omitempty"`
 	AutoNotifyDocuments *bool                                           `json:"auto_notify_documents_enabled" validate:"omitempty"`
 	Documents           mysql.PatchNullJSONSlice[PostEventDocumentBody] `json:"documents" validate:"omitempty,dive"`
+}
+
+func (p *PatchBody) Validate() (err error) {
+	if p.Title == nil &&
+		p.Description.String == nil &&
+		p.Speakers == nil &&
+		p.Location.String == nil &&
+		p.Datetimes == nil &&
+		p.Published == nil &&
+		p.Completed == nil &&
+		p.AutoNotifyDocuments == nil &&
+		p.Documents.Slice == nil {
+		err = errors.New("no update")
+	}
+	return
 }
 
 func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []uint64, err error) {

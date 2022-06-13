@@ -50,6 +50,11 @@ func PatchById(c echo.Context) (err error) {
 		c.Logger().Debug(err)
 		return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
 	}
+	if err = p.Validate(); err != nil {
+		// 400: Bad request
+		c.Logger().Debug(err)
+		return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": err.Error()}, "	")
+	}
 	if !claims.Admin {
 		if p.PostEventAvailabled != nil || p.Admin != nil {
 			// Admin権限がない場合、変更不可

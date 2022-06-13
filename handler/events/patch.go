@@ -62,6 +62,11 @@ func PatchById(c echo.Context) (err error) {
 		c.Logger().Debug(err)
 		return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
 	}
+	if err = p.Validate(); err != nil {
+		// 400: Bad request
+		c.Logger().Debug(err)
+		return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": err.Error()}, "	")
+	}
 
 	// 更新
 	e, notFound, notFoundUserIds, err := events.Patch(id, *p)

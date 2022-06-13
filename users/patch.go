@@ -1,6 +1,7 @@
 package users
 
 import (
+	"errors"
 	"prc_hub-api/mysql"
 	"strings"
 
@@ -15,6 +16,19 @@ type PatchBody struct {
 	TwitterId           mysql.PatchNullJSONString `json:"twiiter_id" validate:"omitempty,gte=1"`
 	PostEventAvailabled *bool                     `json:"post_event_availabled" validate:"omitempty"`
 	Admin               *bool                     `json:"admin" validate:"omitempty"`
+}
+
+func (p *PatchBody) Validate() (err error) {
+	if p.Name == nil &&
+		p.Email == nil &&
+		p.Password == nil &&
+		p.GithubUsername.String == nil &&
+		p.TwitterId.String == nil &&
+		p.PostEventAvailabled == nil &&
+		p.Admin == nil {
+		err = errors.New("no update")
+	}
+	return
 }
 
 func Patch(id uint64, new PatchBody) (u User, invalidEmail bool, usedEmail bool, notFound bool, err error) {

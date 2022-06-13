@@ -1,7 +1,6 @@
 package events
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"prc_hub-api/events"
@@ -45,26 +44,28 @@ func GetById(c echo.Context) (err error) {
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		// 404: Not found
+		c.Logger().Debug("404: cannot parse `:id`")
 		return echo.ErrNotFound
 	}
 
 	// userを取得
 	e, notFound, err := events.GetById(id)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	if notFound {
 		// 404: Not found
-		c.Logger().Debug(errors.New("event not found"))
-		return echo.ErrNotFound
+		c.Logger().Debug("404: event not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event not found"}, "	")
 	}
 	if !admin && !e.Published && (userId == nil || e.UserId != *userId) {
 		// 403: Forbidden
-		c.Logger().Debug(errors.New("you cannot access this event"))
-		return echo.ErrForbidden
+		c.Logger().Debug("403: you cannot access this event")
+		return c.JSONPretty(http.StatusForbidden, map[string]string{"message": "you cannot access this event"}, "	")
 	}
 
 	// 200: Success
+	c.Logger().Debug("200: get event  successful")
 	return c.JSONPretty(http.StatusOK, e, "	")
 }

@@ -41,25 +41,26 @@ func Get(c echo.Context) (err error) {
 	q := new(events.GetQuery)
 	if err = c.Bind(q); err != nil {
 		// 400: Bad request
-		c.Logger().Debug(err)
+		c.Logger().Debug("400: " + err.Error())
 		return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": err.Error()}, "	")
 	}
 
 	// リクエストボディを検証
 	if err = c.Validate(q); err != nil {
 		// 422: Unprocessable entity
-		c.Logger().Debug(err)
+		c.Logger().Debug("422: " + err.Error())
 		return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
 	}
 
 	// eventを取得
 	events, err := events.Get(*q, userId, admin)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 
 	// 200: Success
+	c.Logger().Debug("200: get events  successful")
 	if events == nil {
 		return c.JSONPretty(http.StatusOK, []interface{}{}, "	")
 	}

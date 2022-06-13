@@ -1,7 +1,6 @@
 package users
 
 import (
-	"errors"
 	"net/http"
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
@@ -16,7 +15,7 @@ func DeleteOwn(c echo.Context) (err error) {
 	u := c.Get("user").(*jwtGo.Token)
 	claims, err := jwt.CheckToken(*flags.Get().JwtIssuer, u)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Debug("401: " + err.Error())
 		return c.JSONPretty(http.StatusUnauthorized, map[string]string{"message": err.Error()}, "	")
 	}
 	id := claims.Id
@@ -29,15 +28,16 @@ func DeleteOwn(c echo.Context) (err error) {
 	// 削除
 	notFound, err := users.Delete(id)
 	if err != nil {
-		c.Logger().Debug(err)
+		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	if notFound {
 		// 404: Not found
-		c.Logger().Debug(errors.New("user not found"))
-		return echo.ErrNotFound
+		c.Logger().Debug("404: user not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "user not found"}, "	")
 	}
 
 	// 204: No content
+	c.Logger().Debug("204: delete user successful")
 	return c.JSONPretty(http.StatusNoContent, map[string]string{"message": "Deleted"}, "	")
 }

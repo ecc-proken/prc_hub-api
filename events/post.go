@@ -42,8 +42,7 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}()
 
 	// 書込
-	result1, err := mysql.TxWrite(
-		tx,
+	result1, err := tx.Exec(
 		`INSERT INTO events (user_id, title, description, location, published, completed, auto_notify_documents_enabled)
 			VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		userId, post.Title, post.Description, post.Location, post.Published, post.Completed, post.AutoNotifyDocuments,
@@ -89,8 +88,7 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}
 	queryStr2 = strings.TrimSuffix(queryStr2, ",")
 	// 書込
-	_, err = mysql.TxWrite(
-		tx,
+	_, err = tx.Exec(
 		queryStr2,
 		queryParams2...,
 	)
@@ -107,8 +105,7 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}
 	queryStr3 = strings.TrimSuffix(queryStr3, ",")
 	// 書込
-	result3, err := mysql.TxWrite(
-		tx,
+	result3, err := tx.Exec(
 		queryStr3,
 		queryParams3...,
 	)
@@ -141,8 +138,7 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	}
 	queryStr4 = strings.TrimSuffix(queryStr4, ",")
 	// 書込
-	result4, err := mysql.TxWrite(
-		tx,
+	result4, err := tx.Exec(
 		queryStr4,
 		queryParams4...,
 	)

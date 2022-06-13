@@ -95,7 +95,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		queryParams1 = append(queryParams1, id)
 
 		// 更新
-		_, err = mysql.TxWrite(tx, queryStr1, queryParams1...)
+		_, err = tx.Exec(queryStr1, queryParams1...)
 		if err != nil {
 			return
 		}
@@ -129,7 +129,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		}
 
 		// 削除
-		_, err = mysql.TxWrite(tx, "DELETE FROM event_speakers WHERE event_id = ?", id)
+		_, err = tx.Exec("DELETE FROM event_speakers WHERE event_id = ?", id)
 		if err != nil {
 			return
 		}
@@ -143,7 +143,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		}
 		queryStr2 = strings.TrimSuffix(queryStr2, ",")
 		// 書込
-		_, err = mysql.TxWrite(tx, queryStr2, queryParams2...)
+		_, err = tx.Exec(queryStr2, queryParams2...)
 		if err != nil {
 			return
 		}
@@ -154,7 +154,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 	// event_datetimesテーブルを更新(PUT)
 	if p.Datetimes != nil {
 		// 削除
-		_, err = mysql.TxWrite(tx, "DELETE FROM event_datetimes WHERE event_id = ?", id)
+		_, err = tx.Exec("DELETE FROM event_datetimes WHERE event_id = ?", id)
 		if err != nil {
 			return
 		}
@@ -169,7 +169,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 		queryStr3 = strings.TrimSuffix(queryStr3, ",")
 		// 書込
 		var result3 sql.Result
-		result3, err = mysql.TxWrite(tx, queryStr3, queryParams3...)
+		result3, err = tx.Exec(queryStr3, queryParams3...)
 		if err != nil {
 			return
 		}
@@ -197,7 +197,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 	// event_datetimesテーブルを更新(PUT)
 	if p.Documents.Slice != nil {
 		// 削除
-		_, err = mysql.TxWrite(tx, "DELETE FROM event_documents WHERE event_id = ?", id)
+		_, err = tx.Exec("DELETE FROM event_documents WHERE event_id = ?", id)
 		if err != nil {
 			return
 		}
@@ -214,7 +214,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 			queryStr4 = strings.TrimSuffix(queryStr4, ",")
 			// 書込
 			var result2 sql.Result
-			result2, err = mysql.TxWrite(tx, queryStr4, queryParams4...)
+			result2, err = tx.Exec(queryStr4, queryParams4...)
 			if err != nil {
 				return
 			}

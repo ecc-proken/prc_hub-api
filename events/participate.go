@@ -17,7 +17,7 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	}()
 
 	// userを取得
-	r1, err := mysql.TxRead(tx, "SELECT id FROM users WHERE id = ?", userId)
+	r1, err := tx.Query("SELECT id FROM users WHERE id = ?", userId)
 	if err != nil {
 		return
 	}
@@ -32,7 +32,7 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	}
 
 	// eventを取得
-	r2, err := mysql.TxRead(tx, "SELECT id FROM events WHERE id = ?", eventId)
+	r2, err := tx.Query("SELECT id FROM events WHERE id = ?", eventId)
 	if err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	}
 
 	// event_datetimeを取得
-	r3, err := mysql.TxRead(tx, "SELECT id FROM event_datetimes WHERE id = ?", datetimeId)
+	r3, err := tx.Query("SELECT id FROM event_datetimes WHERE id = ?", datetimeId)
 	if err != nil {
 		return
 	}
@@ -62,7 +62,7 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	}
 
 	// 参加登録情報を取得
-	r4, err := mysql.TxRead(tx, "SELECT event_datetime_id FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
+	r4, err := tx.Query("SELECT event_datetime_id FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
 	if err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func Participate(eventId uint64, datetimeId uint64, userId uint64) (e EventParti
 	}
 
 	// 書込
-	_, err = mysql.TxWrite(tx, "INSERT INTO event_participates (event_datetime_id, user_id) VALUES (?, ?)", datetimeId, userId)
+	_, err = tx.Exec("INSERT INTO event_participates (event_datetime_id, user_id) VALUES (?, ?)", datetimeId, userId)
 	if err != nil {
 		return
 	}

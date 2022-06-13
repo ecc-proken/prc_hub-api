@@ -17,7 +17,7 @@ func Unparticipate(datetimeId uint64, userId uint64) (notFound bool, err error) 
 	}()
 
 	// 参加登録情報を取得
-	r, err := mysql.TxRead(tx, "SELECT true FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
+	r, err := tx.Query("SELECT true FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
 	if err != nil {
 		return
 	}
@@ -33,7 +33,7 @@ func Unparticipate(datetimeId uint64, userId uint64) (notFound bool, err error) 
 	}
 
 	// 削除
-	_, err = mysql.TxWrite(tx, "DELETE FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
+	_, err = tx.Exec("DELETE FROM event_participates WHERE event_datetime_id = ? AND user_id = ?", datetimeId, userId)
 	if err != nil {
 		return
 	}

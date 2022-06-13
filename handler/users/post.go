@@ -38,9 +38,9 @@ func Post(c echo.Context) (err error) {
 		return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": "invalid email"}, "	")
 	}
 	if usedEmail {
-		// 409: Conflict
+		// 400: Bad request
 		c.Logger().Debug(errors.New("email already used"))
-		return c.JSONPretty(http.StatusConflict, map[string]string{"message": "email already used"}, "	")
+		return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": "email already used"}, "	")
 	}
 
 	// トークンを生成

@@ -106,7 +106,7 @@ func Post(c echo.Context) (err error) {
 		}
 		if notFound {
 			// ユーザー情報変更に失敗
-			return c.JSONPretty(http.StatusConflict, map[string]string{"message": "connot update user, conflict found"}, "	")
+			return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": "connot update user, conflict found"}, "	")
 		}
 	}
 

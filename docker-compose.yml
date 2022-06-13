@@ -27,6 +27,8 @@ services:
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@prchub.com}
       ADMIN_PASSWD: ${ADMIN_PASSWD:-password}
+      LINE_NOTIFY_TOKEN: ${LINE_NOTIFY_TOKEN}
+      FRONT_URL: ${FRONT_URL:-localhost:1323}
     depends_on:
       - db
     restart: unless-stopped

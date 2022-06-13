@@ -9,15 +9,14 @@ import (
 )
 
 type PatchBody struct {
-	Title               *string                                         `json:"title" validate:"omitempty,gte=1"`
-	Description         mysql.PatchNullJSONString                       `json:"description" validate:"omitempty,dive"`
-	Speakers            *[]uint64                                       `json:"speakers" validate:"omitempty,gte=1,dive,gte=1"`
-	Location            mysql.PatchNullJSONString                       `json:"location" validate:"omitempty,dive"`
-	Datetimes           *[]PostDatetime                                 `json:"datetimes" validate:"omitempty,gte=1,dive"`
-	Published           *bool                                           `json:"published" validate:"omitempty"`
-	Completed           *bool                                           `json:"completed" validate:"omitempty"`
-	AutoNotifyDocuments *bool                                           `json:"auto_notify_documents_enabled" validate:"omitempty"`
-	Documents           mysql.PatchNullJSONSlice[PostEventDocumentBody] `json:"documents" validate:"omitempty,dive"`
+	Title       *string                                         `json:"title" validate:"omitempty,gte=1"`
+	Description mysql.PatchNullJSONString                       `json:"description" validate:"omitempty,dive"`
+	Speakers    *[]uint64                                       `json:"speakers" validate:"omitempty,gte=1,dive,gte=1"`
+	Location    mysql.PatchNullJSONString                       `json:"location" validate:"omitempty,dive"`
+	Datetimes   *[]PostDatetime                                 `json:"datetimes" validate:"omitempty,gte=1,dive"`
+	Published   *bool                                           `json:"published" validate:"omitempty"`
+	Completed   *bool                                           `json:"completed" validate:"omitempty"`
+	Documents   mysql.PatchNullJSONSlice[PostEventDocumentBody] `json:"documents" validate:"omitempty,dive"`
 }
 
 func (p *PatchBody) Validate() (err error) {
@@ -28,7 +27,6 @@ func (p *PatchBody) Validate() (err error) {
 		p.Datetimes == nil &&
 		p.Published == nil &&
 		p.Completed == nil &&
-		p.AutoNotifyDocuments == nil &&
 		p.Documents.Slice == nil {
 		err = errors.New("no update")
 	}
@@ -60,7 +58,7 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 
 	// eventsテーブルを更新(PATCH)
 	if p.Title != nil || p.Description.String != nil || p.Location.String != nil ||
-		p.Published != nil || p.Completed != nil || p.AutoNotifyDocuments != nil {
+		p.Published != nil || p.Completed != nil {
 		// クエリ作成
 		queryStr1 := "UPDATE events SET"
 		var queryParams1 []interface{}
@@ -100,11 +98,6 @@ func Patch(id uint64, p PatchBody) (e Event, notFound bool, notFoundUserIds []ui
 			queryStr1 += " completed = ?,"
 			queryParams1 = append(queryParams1, p.Completed)
 			updated.Completed = *p.Completed
-		}
-		if p.AutoNotifyDocuments != nil {
-			queryStr1 += " auto_notify_documents_enabled = ?,"
-			queryParams1 = append(queryParams1, p.AutoNotifyDocuments)
-			updated.AutoNotifyDocuments = *p.AutoNotifyDocuments
 		}
 		queryStr1 = strings.TrimRight(queryStr1, ",")
 		queryStr1 += " WHERE id = ?"

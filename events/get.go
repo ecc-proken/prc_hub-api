@@ -12,7 +12,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 			SELECT ? as event_id
 		)
 		SELECT
-			e.id, e.title, e.description, e.location, e.published, e.completed, e.auto_notify_documents_enabled,
+			e.id, e.title, e.description, e.location, e.published, e.completed,
 			null, null, null, null,
 			null, null, null, null,
 			null, null, null
@@ -20,7 +20,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		WHERE e.id IN (SELECT event_id FROM params)
 		UNION ALL
 		SELECT
-			s.event_id, null, null, null, null, null, null,
+			s.event_id, null, null, null, null, null,
 			u.id, u.name, u.github_username, u.twitter_id,
 			null, null, null, null,
 			null, null, null
@@ -28,7 +28,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		WHERE s.event_id IN (SELECT event_id FROM params) AND s.user_id = u.id
 		UNION ALL
 		SELECT
-			dt.event_id, null, null, null, null, null, null,
+			dt.event_id, null, null, null, null, null,
 			null, null, null, null,
 			dt.id, dt.start, dt.end, ep.count,
 			null, null, null
@@ -39,7 +39,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		WHERE dt.event_id IN (SELECT event_id FROM params)
 		UNION ALL
 		SELECT
-			doc.event_id, null, null, null, null, null, null,
+			doc.event_id, null, null, null, null, null,
 			null, null, null, null,
 			null, null, null, null,
 			doc.id, doc.name, doc.url
@@ -59,13 +59,12 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 	for rows.Next() {
 		// 読込用変数
 		var (
-			eId                  uint64
-			eTitle               *string
-			eDescription         *string
-			eLocation            *string
-			ePublished           *bool
-			eCompleted           *bool
-			eAutoNotifyDocuments *bool
+			eId          uint64
+			eTitle       *string
+			eDescription *string
+			eLocation    *string
+			ePublished   *bool
+			eCompleted   *bool
 
 			uId      *uint64
 			uName    *string
@@ -83,7 +82,7 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 		)
 		// 変数に割り当て
 		err = rows.Scan(
-			&eId, &eTitle, &eDescription, &eLocation, &ePublished, &eCompleted, &eAutoNotifyDocuments,
+			&eId, &eTitle, &eDescription, &eLocation, &ePublished, &eCompleted,
 			&uId, &uName, &uGithub, &uTwitter,
 			&dtId, &dtStart, &dtEnd, &dpCount,
 			&dcId, &dcName, &dcUrl,
@@ -93,13 +92,12 @@ func GetById(id uint64) (e Event, notFound bool, err error) {
 			// 読込中のEventがない場合(初回に実行)
 			// 新しく読み込んだEventを保持
 			loadingEvent = &Event{
-				Id:                  eId,
-				Title:               *eTitle,
-				Description:         eDescription,
-				Location:            eLocation,
-				Published:           *ePublished,
-				Completed:           *eCompleted,
-				AutoNotifyDocuments: *eAutoNotifyDocuments,
+				Id:          eId,
+				Title:       *eTitle,
+				Description: eDescription,
+				Location:    eLocation,
+				Published:   *ePublished,
+				Completed:   *eCompleted,
 			}
 		} else if uId != nil && uName != nil {
 			// UserをEvent.Speakersに追加

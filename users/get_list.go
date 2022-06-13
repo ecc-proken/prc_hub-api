@@ -6,16 +6,17 @@ import (
 )
 
 type GetQuery struct {
-	Name                *string `json:"name" validate:"omitempty"`
-	NameContain         *string `json:"name_contain" validate:"omitempty"`
-	Email               *string `json:"email" validate:"omitempty"`
-	PostEventAvailabled *bool   `json:"post_event_availabled" validate:"omitempty"`
-	Admin               *bool   `json:"admin" validate:"omitempty"`
+	Name                *string  `json:"name" validate:"omitempty"`
+	NameContain         *string  `json:"name_contain" validate:"omitempty"`
+	Email               *string  `json:"email" validate:"omitempty"`
+	PostEventAvailabled *bool    `json:"post_event_availabled" validate:"omitempty"`
+	Admin               *bool    `json:"admin" validate:"omitempty"`
+	Ids                 []uint64 `json:"-" validate:"omitempty"`
 }
 
 func Get(query GetQuery) (users []User, err error) {
 	// クエリを作成
-	queryStr := "SELECT id, name, email, github_username, twitter_id, post_event_availabled, admin FROM users WHERE"
+	queryStr := "SELECT id, name, email, github_username, twitter_id, post_event_availabled, admin, migrated_admin FROM users WHERE"
 	queryParams := []interface{}{}
 
 	if query.PostEventAvailabled != nil {
@@ -38,6 +39,15 @@ func Get(query GetQuery) (users []User, err error) {
 		queryStr += " email = ? AND"
 		queryParams = append(queryParams, query.Email)
 	}
+	if len(query.Ids) != 0 {
+		queryStr += " id IN ("
+		for _, id := range query.Ids {
+			queryStr += " ?,"
+			queryParams = append(queryParams, id)
+		}
+		queryStr = strings.TrimSuffix(queryStr, ",")
+		queryStr += " ) AND"
+	}
 	queryStr = strings.TrimSuffix(queryStr, " WHERE")
 	queryStr = strings.TrimSuffix(queryStr, " AND")
 
@@ -50,7 +60,46 @@ func Get(query GetQuery) (users []User, err error) {
 
 	for rows.Next() {
 		u := User{}
-		err = rows.Scan(&u.Id, &u.Name, &u.Email, &u.GithubUsername, &u.TwitterId, &u.PostEventAvailabled, &u.Admin)
+		err = rows.Scan(&u.Id, &u.Name, &u.Email, &u.GithubUsername, &u.TwitterId, &u.PostEventAvailabled, &u.Admin, &u.MigrateAdmin)
+		if err != nil {
+			return
+		}
+		users = append(users, u)
+	}
+
+	return
+}
+
+type GetEmbedQuery struct {
+	Ids []uint64 `json:"-" validate:"omitempty"`
+}
+
+func GetEmbed(query GetEmbedQuery) (users []UserEmbed, err error) {
+	// クエリを作成
+	queryStr := "SELECT id, name, github_username, twitter_id FROM users WHERE"
+	queryParams := []interface{}{}
+
+	if len(query.Ids) != 0 {
+		queryStr += " id IN ("
+		for _, id := range query.Ids {
+			queryStr += " ?,"
+			queryParams = append(queryParams, id)
+		}
+		queryStr = strings.TrimSuffix(queryStr, ",")
+		queryStr += " )"
+	}
+	queryStr = strings.TrimSuffix(queryStr, " WHERE")
+
+	// 読込
+	rows, err := mysql.Read(queryStr, queryParams...)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := UserEmbed{}
+		err = rows.Scan(&u.Id, &u.Name, &u.GithubUsername, &u.TwitterId)
 		if err != nil {
 			return
 		}

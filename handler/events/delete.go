@@ -1,10 +1,10 @@
-package users
+package events
 
 import (
 	"net/http"
+	"prc_hub-api/events"
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
-	"prc_hub-api/users"
 	"strconv"
 
 	jwtGo "github.com/golang-jwt/jwt"
@@ -30,34 +30,36 @@ func DeleteById(c echo.Context) (err error) {
 		return echo.ErrNotFound
 	}
 
-	// 権限確認
-	if !claims.Admin && claims.Id != id {
-		// Admin権限なし 且つ IDが自分ではない
-		// 403: Forbidden
-		c.Logger().Debug("403: you cannot delete this user")
-		return c.JSONPretty(http.StatusForbidden, map[string]string{"message": "you cannot delete this user"}, "	")
-	}
-
-	if claims.Id == id && claims.Email == *flags.Get().AdminEmail {
-		// name=adminは削除不可
-		// 405: Method not allowed
-		c.Logger().Debug("405: cannot delete admin user")
-		return c.JSONPretty(http.StatusMethodNotAllowed, map[string]string{"message": "cannot delete admin user"}, "	")
-	}
-
-	// 削除
-	notFound, err := users.Delete(id)
+	// Eventを取得
+	e, notFound, err := events.GetById(id)
 	if err != nil {
 		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
 	if notFound {
 		// 404: Not found
-		c.Logger().Debug("404: user not found")
-		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "user not found"}, "	")
+		c.Logger().Debug("404: event not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event not found"}, "	")
+	}
+	if !claims.Admin && claims.Id != e.UserId {
+		// 403: Forbidden
+		c.Logger().Debug("403: you cannot delete this event")
+		return c.JSONPretty(http.StatusForbidden, map[string]string{"message": "you cannot delete this event"}, "	")
+	}
+
+	// 削除
+	notFound, err = events.Delete(id)
+	if err != nil {
+		c.Logger().Fatal(err)
+		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
+	}
+	if notFound {
+		// 404: Not found
+		c.Logger().Debug("404: event not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event not found"}, "	")
 	}
 
 	// 204: No content
-	c.Logger().Debug("204: delete user successful")
+	c.Logger().Debug("204: event deleted")
 	return c.JSONPretty(http.StatusNoContent, map[string]string{"message": "Deleted"}, "	")
 }

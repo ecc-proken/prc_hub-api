@@ -10,13 +10,7 @@ func Read(queryStr string, args ...any) (rows *sql.Rows, err error) {
 	}
 	defer db.Close()
 
-	stmtOut, err := db.Prepare(queryStr)
-	if err != nil {
-		return
-	}
-	defer stmtOut.Close()
-
-	return stmtOut.Query(args...)
+	return db.Query(queryStr, args...)
 }
 
 // INSERT, UPDATE, DELETE
@@ -26,10 +20,6 @@ func Write(queryStr string, args ...any) (result sql.Result, err error) {
 		return
 	}
 	defer db.Close()
-	stmtIns, err := db.Prepare(queryStr)
-	if err != nil {
-		return
-	}
-	defer stmtIns.Close()
-	return stmtIns.Exec(args...)
+
+	return db.Exec(queryStr, args...)
 }

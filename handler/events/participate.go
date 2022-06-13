@@ -1,17 +1,17 @@
-package users
+package events
 
 import (
 	"net/http"
+	"prc_hub-api/events"
 	"prc_hub-api/flags"
 	"prc_hub-api/jwt"
-	"prc_hub-api/users"
 	"strconv"
 
 	jwtGo "github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
-func GetById(c echo.Context) (err error) {
+func Participate(c echo.Context) (err error) {
 	// jwtトークン確認
 	t := c.Get("user").(*jwtGo.Token)
 	claims, err := jwt.CheckToken(*flags.Get().JwtIssuer, t)
@@ -30,27 +30,39 @@ func GetById(c echo.Context) (err error) {
 		return echo.ErrNotFound
 	}
 
-	// 権限確認
-	if !claims.Admin && claims.Id != id {
-		// Admin権限なし 且つ IDが自分ではない
+	// datetime id
+	datetimeIdStr := c.Param("dt_id")
+	// string -> uint64
+	datetimeId, err := strconv.ParseUint(datetimeIdStr, 10, 64)
+	if err != nil {
 		// 404: Not found
-		c.Logger().Debug("404: user not found")
-		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": "user not found"}, "	")
+		c.Logger().Debug("404: cannot parse `:dt_id`")
+		return echo.ErrNotFound
 	}
 
-	// userを取得
-	u, notFound, err := users.GetById(id)
+	// 参加情報を登録
+	ep, eventNotFound, datetimeNotFound, userNotFound, err := events.Participate(id, datetimeId, claims.Id)
 	if err != nil {
 		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
-	if notFound {
+	if eventNotFound {
+		// 404: Not found
+		c.Logger().Debug("404: event not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event not found"}, "	")
+	}
+	if datetimeNotFound {
+		// 404: Not found
+		c.Logger().Debug("404: event datetime not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event datetime not found"}, "	")
+	}
+	if userNotFound {
 		// 404: Not found
 		c.Logger().Debug("404: user not found")
 		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "user not found"}, "	")
 	}
 
 	// 200: Success
-	c.Logger().Debug("200: get user successful")
-	return c.JSONPretty(http.StatusOK, u, "	")
+	c.Logger().Debug("200: participate  successful")
+	return c.JSONPretty(http.StatusOK, ep, "	")
 }

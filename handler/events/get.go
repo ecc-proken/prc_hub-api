@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"prc_hub-api/events"
 	"prc_hub-api/flags"
+	"strconv"
 	"strings"
 
 	jwtGo "github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
-func Get(c echo.Context) (err error) {
+func GetById(c echo.Context) (err error) {
 	// jwtトークン確認
 	var (
 		userId *uint64 = nil
@@ -37,32 +38,34 @@ func Get(c echo.Context) (err error) {
 		}
 	}
 
-	// リクエストボディをバインド
-	q := new(events.GetQuery)
-	if err = c.Bind(q); err != nil {
-		// 400: Bad request
-		c.Logger().Debug("400: " + err.Error())
-		return c.JSONPretty(http.StatusBadRequest, map[string]string{"message": err.Error()}, "	")
+	// id
+	idStr := c.Param("id")
+	// string -> uint64
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		// 404: Not found
+		c.Logger().Debug("404: cannot parse `:id`")
+		return echo.ErrNotFound
 	}
 
-	// リクエストボディを検証
-	if err = c.Validate(q); err != nil {
-		// 422: Unprocessable entity
-		c.Logger().Debug("422: " + err.Error())
-		return c.JSONPretty(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()}, "	")
-	}
-
-	// eventを取得
-	events, err := events.Get(*q, userId, admin)
+	// userを取得
+	e, notFound, err := events.GetById(id)
 	if err != nil {
 		c.Logger().Fatal(err)
 		return c.JSONPretty(http.StatusInternalServerError, map[string]string{"message": err.Error()}, "	")
 	}
+	if notFound {
+		// 404: Not found
+		c.Logger().Debug("404: event not found")
+		return c.JSONPretty(http.StatusNotFound, map[string]string{"message": "event not found"}, "	")
+	}
+	if !admin && !e.Published && (userId == nil || e.UserId != *userId) {
+		// 403: Forbidden
+		c.Logger().Debug("403: you cannot access this event")
+		return c.JSONPretty(http.StatusForbidden, map[string]string{"message": "you cannot access this event"}, "	")
+	}
 
 	// 200: Success
-	c.Logger().Debug("200: get events  successful")
-	if events == nil {
-		return c.JSONPretty(http.StatusOK, []interface{}{}, "	")
-	}
-	return c.JSONPretty(http.StatusOK, events, "	")
+	c.Logger().Debug("200: get event  successful")
+	return c.JSONPretty(http.StatusOK, e, "	")
 }

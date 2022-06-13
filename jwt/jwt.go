@@ -9,20 +9,28 @@ import (
 )
 
 type JwtCustumClaims struct {
-	Id    uint64 `json:"id"`
-	Email string `json:"email"`
-	Admin bool   `json:"admin"`
+	Id            uint64 `json:"id"`
+	Email         string `json:"email"`
+	Admin         bool   `json:"admin"`
+	MigratedAdmin bool   `json:"migrated_admin"`
 	jwt.StandardClaims
 }
 
 func GenerateToken(user users.User, issuer string, secret string) (token string, err error) {
+	// 有効期限
+	expAt := time.Now().Add(time.Hour * 72).Unix()
+	if user.MigrateAdmin {
+		expAt = time.Now().Add(time.Hour * 8).Unix()
+	}
+
 	// Set custom claims
 	claims := &JwtCustumClaims{
 		user.Id,
 		user.Email,
 		user.Admin,
+		user.MigrateAdmin,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			ExpiresAt: expAt,
 			IssuedAt:  time.Now().Unix(),
 			Issuer:    issuer,
 		},

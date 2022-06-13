@@ -60,7 +60,7 @@ func Get(c echo.Context) (err error) {
 	}
 
 	// 200: Success
-	c.Logger().Debug("200: get events  successful")
+	c.Logger().Debug("200: get events successful")
 	if events == nil {
 		return c.JSONPretty(http.StatusOK, []interface{}{}, "	")
 	}

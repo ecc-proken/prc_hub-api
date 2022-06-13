@@ -8,15 +8,14 @@ import (
 )
 
 type PostBody struct {
-	Title               string                  `json:"title" validate:"required,gte=1"`
-	Description         *string                 `json:"description" validate:"omitempty"`
-	Speakers            []uint64                `json:"speakers" validate:"required,gte=1,dive,gte=1"`
-	Location            *string                 `json:"location" validate:"omitempty,gte=1"`
-	Datetimes           []PostDatetime          `json:"datetimes" validate:"required,gte=1,dive"`
-	Published           bool                    `json:"published"`
-	Completed           bool                    `json:"completed"`
-	AutoNotifyDocuments bool                    `json:"auto_notify_documents_enabled"`
-	Documents           []PostEventDocumentBody `json:"documents" validate:"omitempty,dive"`
+	Title       string                  `json:"title" validate:"required,gte=1"`
+	Description *string                 `json:"description" validate:"omitempty"`
+	Speakers    []uint64                `json:"speakers" validate:"required,gte=1,dive,gte=1"`
+	Location    *string                 `json:"location" validate:"omitempty,gte=1"`
+	Datetimes   []PostDatetime          `json:"datetimes" validate:"required,gte=1,dive"`
+	Published   bool                    `json:"published"`
+	Completed   bool                    `json:"completed"`
+	Documents   []PostEventDocumentBody `json:"documents" validate:"omitempty,dive"`
 }
 
 type PostDatetime struct {
@@ -43,9 +42,9 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 
 	// 書込
 	result1, err := tx.Exec(
-		`INSERT INTO events (user_id, title, description, location, published, completed, auto_notify_documents_enabled)
-			VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		userId, post.Title, post.Description, post.Location, post.Published, post.Completed, post.AutoNotifyDocuments,
+		`INSERT INTO events (user_id, title, description, location, published, completed)
+			VALUES (?, ?, ?, ?, ?, ?)`,
+		userId, post.Title, post.Description, post.Location, post.Published, post.Completed,
 	)
 	if err != nil {
 		return
@@ -173,7 +172,6 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 	e.Location = post.Location
 	e.Published = post.Published
 	e.Completed = post.Completed
-	e.AutoNotifyDocuments = post.AutoNotifyDocuments
 	e.Speakers = eventSpeakers
 	e.Datetimes = eventDatetimes
 	e.Documents = eventDocuments

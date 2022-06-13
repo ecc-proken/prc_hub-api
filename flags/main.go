@@ -19,6 +19,8 @@ type Flags struct {
 	GithubClientSecret *string
 	AdminEmail         *string
 	AdminPasswd        *string
+	LineNotifyToken    *string
+	FrontUrl           *string
 }
 
 var flags Flags
@@ -47,6 +49,8 @@ func parse() Flags {
 		flag.String("github-client-secret", getEnv("GITHUB_CLIENT_SECRET", ""), "GitHub client secret"),
 		flag.String("admin-email", getEnv("ADMIN_EMAIL", ""), "Admin user email"),
 		flag.String("admin-password", getEnv("ADMIN_PASSWD", ""), "Admin user password"),
+		flag.String("line-notify-token", getEnv("LINE_NOTIFY_TOKEN", ""), "LINE notify token"),
+		flag.String("front-url", getEnv("FRONT_URL", ""), "Frontend url"),
 	}
 
 	flag.Parse()

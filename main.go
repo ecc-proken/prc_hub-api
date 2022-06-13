@@ -105,6 +105,8 @@ func main() {
 	e.DELETE("/events/:id", handler_events.DeleteById)
 	e.POST("/events/:id/:dt_id/participate", handler_events.Participate)
 	e.DELETE("/events/:id/:dt_id/participate", handler_events.Unparticipate)
+	e.POST("/events/:id/webhook/line_notify", handler_events.LineNotify)
+	e.POST("/events/:id/documents/webhook/line_notify", handler_events.LineNotifyDocuments)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *f.Port)))
 }

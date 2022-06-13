@@ -66,6 +66,6 @@ func GetById(c echo.Context) (err error) {
 	}
 
 	// 200: Success
-	c.Logger().Debug("200: get event  successful")
+	c.Logger().Debug("200: get event successful")
 	return c.JSONPretty(http.StatusOK, e, "	")
 }

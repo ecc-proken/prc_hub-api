@@ -60,7 +60,7 @@ func Get(query GetQuery, userId *uint64, admin bool) (events []Event, err error)
 			` + queryStrBase + `
 		)
 		SELECT
-			e.id, e.title, e.description, e.location, e.published, e.completed,
+			e.id as id, e.title as title, e.description, e.location, e.published, e.completed,
 			null, null, null, null,
 			null, null, null, null,
 			null, null, null
@@ -93,7 +93,7 @@ func Get(query GetQuery, userId *uint64, admin bool) (events []Event, err error)
 			doc.id, doc.name, doc.url
 		FROM event_documents doc
 		WHERE doc.event_id IN (SELECT event_id FROM params)
-		ORDER BY id`
+		ORDER BY id, title IS NULL ASC`
 
 	rows, err := mysql.Read(queryStr, queryParams...)
 	if err != nil {

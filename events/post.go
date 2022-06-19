@@ -1,6 +1,7 @@
 package events
 
 import (
+	"database/sql"
 	"prc_hub-api/mysql"
 	"prc_hub-api/users"
 	"strings"
@@ -128,36 +129,40 @@ func Post(userId uint64, post PostBody) (e Event, notFoundUserIds []uint64, err 
 		)
 	}
 
-	// クエリを作成
-	queryStr4 := "INSERT INTO event_documents (event_id, name, url) VALUES "
-	var queryParams4 []interface{}
-	for _, v := range post.Documents {
-		queryStr4 += "(?, ?, ?),"
-		queryParams4 = append(queryParams4, eventId, v.Name, v.Url)
-	}
-	queryStr4 = strings.TrimSuffix(queryStr4, ",")
-	// 書込
-	result4, err := tx.Exec(
-		queryStr4,
-		queryParams4...,
-	)
-	if err != nil {
-		return
-	}
-	eventDocumentId, err := result4.LastInsertId()
-	if err != nil {
-		return
-	}
 	var eventDocuments []EventDocument
-	for i, d := range post.Documents {
-		eventDocuments = append(
-			eventDocuments,
-			EventDocument{
-				Id:   uint64(eventDocumentId + int64(i)),
-				Name: d.Name,
-				Url:  d.Url,
-			},
+	if post.Documents != nil && len(post.Documents) != 0 {
+		// クエリを作成
+		queryStr4 := "INSERT INTO event_documents (event_id, name, url) VALUES "
+		var queryParams4 []interface{}
+		for _, v := range post.Documents {
+			queryStr4 += "(?, ?, ?),"
+			queryParams4 = append(queryParams4, eventId, v.Name, v.Url)
+		}
+		queryStr4 = strings.TrimSuffix(queryStr4, ",")
+		// 書込
+		var result4 sql.Result
+		result4, err = tx.Exec(
+			queryStr4,
+			queryParams4...,
 		)
+		if err != nil {
+			return
+		}
+		var eventDocumentId int64
+		eventDocumentId, err = result4.LastInsertId()
+		if err != nil {
+			return
+		}
+		for i, d := range post.Documents {
+			eventDocuments = append(
+				eventDocuments,
+				EventDocument{
+					Id:   uint64(eventDocumentId + int64(i)),
+					Name: d.Name,
+					Url:  d.Url,
+				},
+			)
+		}
 	}
 
 	err = tx.Commit()

@@ -62,6 +62,7 @@ services:
     ports:
       # Serve the mocked API locally as available on port 8080
       - '8080:4010'
+    restart: unless-stopped
 
 volumes:
   go_src:

@@ -268,7 +268,7 @@ paths:
                       - id: 6
                         event_id: 2
                         start: "2022-05-27T18:45:00+0900"
-                        end: "2022-05-27T19:30:00:00+0900"
+                        end: "2022-05-27T19:30:00+0900"
                         participate_count: 7
                     published: true
                     completed: true

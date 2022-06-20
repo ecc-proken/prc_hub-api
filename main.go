@@ -35,12 +35,17 @@ func main() {
 
 	// echoサーバーのインスタンス生成
 	e := echo.New()
+	// ログレベルの設定
+	e.Logger.SetLevel(log.Lvl(*f.LogLevel))
 	// Gzipの圧縮レベル設定
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: int(*f.GzipLevel),
 	}))
-	// ログレベルの設定
-	e.Logger.SetLevel(log.Lvl(*f.LogLevel))
+	// CORSの設定
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: flags.Get().AllowOrigins,
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
 	// structの変数を検証するvalidatorをechoに設定
 	e.Validator = &CustomValidator{validator: validator.New()}
 

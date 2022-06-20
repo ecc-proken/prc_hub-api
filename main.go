@@ -42,10 +42,12 @@ func main() {
 		Level: int(*f.GzipLevel),
 	}))
 	// CORSの設定
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: flags.Get().AllowOrigins,
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
-	}))
+	if f.AllowOrigins != nil && len(f.AllowOrigins) != 0 {
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: f.AllowOrigins,
+			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		}))
+	}
 	// structの変数を検証するvalidatorをechoに設定
 	e.Validator = &CustomValidator{validator: validator.New()}
 

@@ -4,10 +4,24 @@ import (
 	"flag"
 )
 
+type AllowOrigins []string
+
+// Implements from flag.Value
+func (i *AllowOrigins) String() string {
+	return "my string representation"
+}
+
+// Implements from flag.Value
+func (i *AllowOrigins) Set(v string) error {
+	*i = append(*i, v)
+	return nil
+}
+
 type Flags struct {
 	Port               *uint
 	LogLevel           *uint
 	GzipLevel          *uint
+	AllowOrigins       AllowOrigins
 	MysqlHost          *string
 	MysqlPORT          *uint
 	MysqlDB            *string
@@ -38,6 +52,7 @@ func parse() Flags {
 		flag.Uint("port", getUintEnv("PORT", 1323), "Server port"),
 		flag.Uint("log-level", getUintEnv("LOG_LEVEL", 2), "Log level (1: 'DEBUG', 2: 'INFO', 3: 'WARN', 4: 'ERROR', 5: 'OFF', 6: 'PANIC', 7: 'FATAL'"),
 		flag.Uint("gzip-level", getUintEnv("GZIP_LEVEL", 6), "Gzip compression level"),
+		AllowOrigins{},
 		flag.String("mysql-host", getEnv("MYSQL_HOST", "db"), "MySQL host"),
 		flag.Uint("mysql-port", getUintEnv("MYSQL_PORT", 3306), "MySQL port"),
 		flag.String("mysql-database", getEnv("MYSQL_DATABASE", "prc_hub-api"), "MySQL database"),
@@ -52,6 +67,7 @@ func parse() Flags {
 		flag.String("line-notify-token", getEnv("LINE_NOTIFY_TOKEN", ""), "LINE notify token"),
 		flag.String("front-url", getEnv("FRONT_URL", ""), "Frontend url"),
 	}
+	flag.Var(&flags.AllowOrigins, "allow-origin", "CORS allow origins")
 
 	flag.Parse()
 	return flags
